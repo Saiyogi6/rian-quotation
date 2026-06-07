@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: rian_studioz_db
+    environment:
+      POSTGRES_USER: rian_user
+      POSTGRES_PASSWORD: rian_password
+      POSTGRES_DB: rian_quotes
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rian_user -d rian_quotes"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    container_name: rian_studioz_web
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://rian_user:rian_password@db:5432/rian_quotes
+      - SECRET_KEY=rian-studioz-super-secret-key-change-in-prod
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=rianstudioz123
+      - WEBHOOK_URL=
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - pdfs_volume:/app/app/static/pdfs
+    healthcheck:
+      # Use python urllib to perform healthcheck since curl is not in slim images
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  pgdata:
+  pdfs_volume:

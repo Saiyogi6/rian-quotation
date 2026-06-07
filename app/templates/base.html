@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Rian Studioz Quotation Engine{% endblock %}</title>
+    <!-- CSS and Fonts -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    {% if request and request.cookies.get("session_id") == "logged_in" %}
+    <header>
+        <div class="header-brand">
+            <img src="/static/images/logo.png" alt="Rian Studioz Logo" onerror="this.style.display='none'">
+            <h1>Rian Studioz</h1>
+        </div>
+        <nav class="header-nav">
+            <a href="/" id="nav_dashboard">Dashboard</a>
+            <a href="/quotes/new" id="nav_new_quote">New Quote</a>
+            <a href="/settings" id="nav_settings">Settings</a>
+            <a href="/logout" style="color: var(--danger);"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+    </header>
+    {% endif %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

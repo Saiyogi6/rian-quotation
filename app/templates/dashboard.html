@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Rian Studioz Quotation Engine{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="dashboard-header">
+        <div class="dashboard-title">
+            <h2>Quotation Portfolio</h2>
+            <p>Create, manage, and dispatch premium media production proposals</p>
+        </div>
+        <div>
+            <a href="/quotes/new" class="btn btn-primary"><i class="fas fa-plus" style="margin-right: 8px;"></i> Create Quotation</a>
+        </div>
+    </div>
+
+    <!-- Search / Filter bar -->
+    <div style="background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; margin-bottom: 25px; display: flex; gap: 15px; align-items: center;">
+        <i class="fas fa-search" style="color: var(--text-secondary);"></i>
+        <input type="text" id="dashboard_search" class="form-control" placeholder="Search by quotation number, client name, or type..." style="background-color: transparent; border: none; padding: 5px; font-size: 14px; width: 100%;" oninput="filterDashboardTable()">
+    </div>
+
+    <div class="quote-table-container">
+        {% if quotes %}
+        <table class="quote-table">
+            <thead>
+                <tr>
+                    <th>Quotation No</th>
+                    <th>Date</th>
+                    <th>Client / Project</th>
+                    <th>Quotation Preset</th>
+                    <th style="text-align: right;">Total Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="quotes_tbody">
+                {% for q in quotes %}
+                <tr class="quote-row" data-search="{{ q.quotation_number.lower() }} {{ q.client_name.lower() }} {{ q.quote_type.lower() }}">
+                    <td style="font-weight: 600; color: var(--accent);">{{ q.quotation_number }}</td>
+                    <td>{{ q.quotation_date }}</td>
+                    <td>
+                        <div style="font-weight: 500;">{{ q.client_name }}</div>
+                    </td>
+                    <td>
+                        <span style="font-size: 12px; color: var(--text-secondary); background-color: #2c2c36; padding: 3px 8px; border-radius: 4px; font-weight: 500;">
+                            {{ q.quote_type }}
+                        </span>
+                    </td>
+                    <td style="text-align: right; font-weight: 600;">₹{{ q.total_amount }}</td>
+                    <td>
+                        <span class="status-badge status-{{ q.status }}">
+                            {{ q.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <!-- Live Preview -->
+                            <a href="/quotes/{{ q.id }}/preview" target="_blank" class="action-icon" title="View Proposal Preview">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <!-- Edit -->
+                            <a href="/quotes/{{ q.id }}/edit" class="action-icon" title="Edit Quotation Form">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <!-- Duplicate -->
+                            <button type="button" class="action-icon" title="Duplicate Quote" onclick="duplicateQuote({{ q.id }})">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <!-- PDF Path / Download -->
+                            {% if q.pdf_path %}
+                            <a href="{{ q.pdf_path }}" target="_blank" class="action-icon" style="color: var(--success);" title="Download PDF">
+                                <i class="fas fa-file-pdf"></i>
+                            </a>
+                            {% else %}
+                            <button type="button" class="action-icon" title="Compile and Export PDF" onclick="compilePdf({{ q.id }})">
+                                <i class="fas fa-file-export"></i>
+                            </button>
+                            {% endif %}
+                            
+                            <!-- Status Selector -->
+                            <select class="form-control" style="width: auto; padding: 2px 5px; font-size: 11px; background-color: #2c2c36; border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer;" onchange="changeQuoteStatus({{ q.id }}, this.value)">
+                                <option value="draft" {% if q.status == 'draft' %}selected{% endif %}>Draft</option>
+                                <option value="sent" {% if q.status == 'sent' %}selected{% endif %}>Sent</option>
+                                <option value="approved" {% if q.status == 'approved' %}selected{% endif %}>Approved</option>
+                                <option value="cancelled" {% if q.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding: 60px; text-align: center; color: var(--text-secondary);">
+            <i class="fas fa-file-invoice" style="font-size: 48px; color: var(--border-color); margin-bottom: 15px; display: block;"></i>
+            <h3>No Quotations Created Yet</h3>
+            <p style="margin-bottom: 20px; font-size: 14px;">Build your first quotation using our studio template presets.</p>
+            <a href="/quotes/new" class="btn btn-primary btn-sm">Create New Quote</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById("nav_dashboard").classList.add("active");
+
+    function filterDashboardTable() {
+        const searchVal = document.getElementById("dashboard_search").value.toLowerCase();
+        const rows = document.querySelectorAll(".quote-row");
+        
+        rows.forEach(row => {
+            const content = row.dataset.search;
+            if (content.includes(searchVal)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+
+    async function duplicateQuote(id) {
+        if (!confirm("Are you sure you want to duplicate this quotation? This will create a new draft copy.")) return;
+        try {
+            const response = await fetch(`/api/quotes/${id}/duplicate`, {
+                method: "POST"
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.detail || "Failed to duplicate");
+            }
+            alert("Quotation duplicated successfully!");
+            window.location.reload();
+        } catch (e) {
+            alert("Error: " + e.message);
+        }
+    }
+
+    async function compilePdf(id) {
+        try {
+            alert("Compiling document with WeasyPrint. Please wait a moment...");
+            const response = await fetch(`/api/quotes/${id}/export-pdf`, {
+                method: "POST"
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.detail || "Failed to compile PDF");
+            }
+            alert("PDF generated successfully!");
+            window.location.reload();
+        } catch (e) {
+            alert("Error generating PDF: " + e.message);
+        }
+    }
+
+    async function changeQuoteStatus(id, newStatus) {
+        try {
+            const response = await fetch(`/api/quotes/${id}/status`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: newStatus })
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.detail || "Failed to update status");
+            }
+            // Update the badge dynamically without full reload
+            window.location.reload();
+        } catch (e) {
+            alert("Error updating status: " + e.message);
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Settings | Rian Studioz Quotation Engine{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="dashboard-header">
+        <div class="dashboard-title">
+            <h2>System Configurations</h2>
+            <p>Modify studio business information, payment policies, and webhook integrations</p>
+        </div>
+        <div>
+            <a href="/" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="settings-grid">
+        <!-- Brand Info Form Card -->
+        <div class="settings-card">
+            <h3>Studio Branding & Details</h3>
+            
+            <form id="settings_form" onsubmit="saveSettings(event)">
+                <div class="form-group">
+                    <label for="brand_name">Brand Studio Name *</label>
+                    <input type="text" id="brand_name" class="form-control" value="{{ brand.name if brand else 'Rian Studioz' }}" required>
+                </div>
+                
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="brand_email">Operations Email</label>
+                        <input type="email" id="brand_email" class="form-control" value="{{ brand.email if brand else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="brand_phone">Operations Contact Phone</label>
+                        <input type="text" id="brand_phone" class="form-control" value="{{ brand.phone if brand else '' }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="brand_website">Operations Website</label>
+                    <input type="text" id="brand_website" class="form-control" value="{{ brand.website if brand else '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="brand_address">Studio Location Address</label>
+                    <textarea id="brand_address" class="form-control" rows="2">{{ brand.address if brand else '' }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="brand_payment">Settlement / Direct Deposit Bank Details</label>
+                    <textarea id="brand_payment" class="form-control" rows="4" placeholder="Bank Name, Account number, IFSC details, UPI ID...">{{ brand.payment_info if brand else '' }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="brand_terms">Terms & Proposal Policies</label>
+                    <textarea id="brand_terms" class="form-control" rows="6" placeholder="Proposal booking rules, payment split definitions, delivery rules...">{{ brand.terms_and_conditions if brand else '' }}</textarea>
+                </div>
+
+                <h3 style="margin-top: 40px;">Integrations & Webhooks</h3>
+                
+                <div class="form-group">
+                    <label for="webhook_url">n8n Webhook Target URL</label>
+                    <input type="url" id="webhook_url" class="form-control" placeholder="https://n8n.yourdomain.com/g/webhook-path..." value="{{ webhook_url or '' }}">
+                    <p style="color: var(--text-secondary); font-size: 11px; margin-top: 5px;">
+                        The system will dispatch a JSON POST payload containing full quotation models and output PDF paths to this URL when proposals are generated or updated.
+                    </p>
+                </div>
+
+                <div style="margin-top: 30px; display: flex; gap: 15px;">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save" style="margin-right: 8px;"></i> Save Configurations</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Right Side Panel Info -->
+        <div>
+            <div class="settings-card" style="margin-bottom: 25px; border-left: 3px solid var(--accent);">
+                <h4 style="font-family: 'Playfair Display', serif; font-size: 16px; color: var(--accent); margin-bottom: 10px;">Operations Manual</h4>
+                <p style="color: var(--text-secondary); font-size: 12px; line-height: 1.6;">
+                    The Brand specifications configure the default values displayed on the quotation proposals. When generating a proposal, variables like the studio logo, terms list, and bank info are pulled automatically from these settings.
+                </p>
+            </div>
+            
+            <div class="settings-card">
+                <h4 style="font-family: 'Playfair Display', serif; font-size: 16px; color: var(--text-primary); margin-bottom: 10px;">n8n Webhook Details</h4>
+                <p style="color: var(--text-secondary); font-size: 12px; line-height: 1.6; margin-bottom: 10px;">
+                    Integrate your quotation workflow with communication channels like WhatsApp Business or Telegram.
+                </p>
+                <p style="color: var(--text-secondary); font-size: 12px; line-height: 1.6;">
+                    <strong>Event dispatched:</strong><br>
+                    <code>quotation.generated</code>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById("nav_settings").classList.add("active");
+
+    async function saveSettings(event) {
+        event.preventDefault();
+        
+        const payload = {
+            webhook_url: document.getElementById("webhook_url").value,
+            brand: {
+                name: document.getElementById("brand_name").value,
+                email: document.getElementById("brand_email").value,
+                phone: document.getElementById("brand_phone").value,
+                website: document.getElementById("brand_website").value,
+                address: document.getElementById("brand_address").value,
+                payment_info: document.getElementById("brand_payment").value,
+                terms_and_conditions: document.getElementById("brand_terms").value
+            }
+        };
+
+        try {
+            const response = await fetch("/api/settings", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.detail || "Failed to update configurations");
+            }
+
+            alert("System configurations updated successfully!");
+            window.location.reload();
+        } catch (e) {
+            alert("Error: " + e.message);
+        }
+    }
+</script>
+{% endblock %}

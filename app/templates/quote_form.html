@@ -1,0 +1,657 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Edit Quote {{ quote.quotation_number }}{% else %}New Quote{% endif %} | Rian Studioz{% endblock %}
+
+{% block content %}
+<div class="editor-layout">
+    <!-- LEFT PANEL: FORM INPUTS -->
+    <div class="form-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 24px;">
+                {% if is_edit %}Modify Quotation{% else %}Generate Proposal{% endif %}
+            </h2>
+            <a href="/" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Cancel</a>
+        </div>
+
+        <input type="hidden" id="is_edit" value="{{ 'true' if is_edit else 'false' }}">
+        <input type="hidden" id="brand_id" value="{{ brand.id if brand else 1 }}">
+        <input type="hidden" id="template_id" value="{{ quote.template_id if is_edit else (templates[0].id if templates else 1) }}">
+        {% if is_edit %}
+        <input type="hidden" id="quote_id" value="{{ quote.id }}">
+        {% endif %}
+
+        <!-- 1. Quote Type Presets Selector -->
+        <div class="form-group">
+            <label>Select Quotation Preset Type</label>
+            <input type="hidden" id="quote_type_code" name="quote_type_code" value="{{ quote.quote_type.code if is_edit else (selected_type.code if selected_type else 'wedding') }}">
+            <div class="preset-cards">
+                {% for qt in quote_types %}
+                <div class="preset-card {{ 'active' if (is_edit and quote.quote_type.code == qt.code) or (not is_edit and selected_type.code == qt.code) else '' }}" data-type="{{ qt.code }}">
+                    {% if qt.code == 'wedding' %}
+                    <i class="fas fa-ring"></i>
+                    {% elif qt.code == 'retirement' %}
+                    <i class="fas fa-award"></i>
+                    {% elif qt.code == 'convocation_ad' %}
+                    <i class="fas fa-graduation-cap"></i>
+                    {% elif qt.code == 'election' %}
+                    <i class="fas fa-bullhorn"></i>
+                    {% else %}
+                    <i class="fas fa-sliders-h"></i>
+                    {% endif %}
+                    <span>{{ qt.name }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 2. Administrative Details Section -->
+        <div class="form-section">
+            <div class="section-header">
+                <h3>Admin & Document Info</h3>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="section-content">
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="quotation_number">Quotation Number *</label>
+                        <input type="text" id="quotation_number" class="form-control" value="{{ quote.quotation_number if is_edit else draft_number }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="quotation_date">Quotation Date *</label>
+                        <input type="date" id="quotation_date" class="form-control" value="{{ quote.quotation_date.isoformat() if is_edit else date.today().isoformat() }}" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Customer / Client Details Section -->
+        <div class="form-section">
+            <div class="section-header">
+                <h3>Client & Contact Info</h3>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="section-content">
+                <div class="form-group">
+                    <label for="client_name">Client Name / Org *</label>
+                    <input type="text" id="client_name" class="form-control" placeholder="e.g. Anand & Divya" value="{{ quote.contact.name if is_edit else '' }}" required>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="client_phone">Contact Phone</label>
+                        <input type="text" id="client_phone" class="form-control" placeholder="e.g. +91 99999 88888" value="{{ quote.contact.phone if is_edit else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="client_email">Contact Email</label>
+                        <input type="email" id="client_email" class="form-control" placeholder="e.g. client@example.com" value="{{ quote.contact.email if is_edit else '' }}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="client_address">Event / Billing Address</label>
+                    <textarea id="client_address" class="form-control" rows="2" placeholder="e.g. Adyar, Chennai">{{ quote.contact.address if is_edit else '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Dynamic Fields based on active preset -->
+        <div class="form-section" id="dynamic_fields_section">
+            <div class="section-header">
+                <h3>Event Specifications</h3>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="section-content">
+                <!-- Wedding Fields -->
+                <div id="fields_wedding" class="dynamic-meta-input-group" style="display: none;">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Groom's Name *</label>
+                            <input type="text" name="groom_name" class="form-control dynamic-meta-field" value="{{ details.groom_name if is_edit and quote.quote_type.code == 'wedding' else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Bride's Name *</label>
+                            <input type="text" name="bride_name" class="form-control dynamic-meta-field" value="{{ details.bride_name if is_edit and quote.quote_type.code == 'wedding' else '' }}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Event Dates *</label>
+                        <input type="text" name="event_dates" class="form-control dynamic-meta-field" placeholder="e.g. September 12th & 13th, 2026" value="{{ details.event_dates if is_edit and quote.quote_type.code == 'wedding' else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Venue(s) *</label>
+                        <input type="text" name="venue" class="form-control dynamic-meta-field" placeholder="e.g. MRC Kalyana Mandapam, Santhome, Chennai" value="{{ details.venue if is_edit and quote.quote_type.code == 'wedding' else '' }}">
+                    </div>
+                </div>
+
+                <!-- Retirement Fields -->
+                <div id="fields_retirement" class="dynamic-meta-input-group" style="display: none;">
+                    <div class="form-group">
+                        <label>Retiree Name *</label>
+                        <input type="text" name="client_name" class="form-control dynamic-meta-field" value="{{ details.client_name if is_edit and quote.quote_type.code == 'retirement' else '' }}">
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Event Date *</label>
+                            <input type="text" name="event_date" class="form-control dynamic-meta-field" placeholder="e.g. 28th October 2026" value="{{ details.event_date if is_edit and quote.quote_type.code == 'retirement' else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Venue *</label>
+                            <input type="text" name="venue" class="form-control dynamic-meta-field" placeholder="e.g. Vani Mahal, Chennai" value="{{ details.venue if is_edit and quote.quote_type.code == 'retirement' else '' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Convocation Fields -->
+                <div id="fields_convocation_ad" class="dynamic-meta-input-group" style="display: none;">
+                    <div class="form-group">
+                        <label>Event / Campaign Name *</label>
+                        <input type="text" name="event_name" class="form-control dynamic-meta-field" value="{{ details.event_name if is_edit and quote.quote_type.code == 'convocation_ad' else '' }}">
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Shoot Date(s) *</label>
+                            <input type="text" name="event_date" class="form-control dynamic-meta-field" placeholder="e.g. 10th-11th August 2026" value="{{ details.event_date if is_edit and quote.quote_type.code == 'convocation_ad' else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Location / Venue *</label>
+                            <input type="text" name="venue" class="form-control dynamic-meta-field" placeholder="e.g. College Auditorium, Trichy" value="{{ details.venue if is_edit and quote.quote_type.code == 'convocation_ad' else '' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Election Fields -->
+                <div id="fields_election" class="dynamic-meta-input-group" style="display: none;">
+                    <div class="form-group">
+                        <label>Candidate / Campaign Name *</label>
+                        <input type="text" name="campaign_name" class="form-control dynamic-meta-field" value="{{ details.campaign_name if is_edit and quote.quote_type.code == 'election' else '' }}">
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Campaign Duration (Dates) *</label>
+                            <input type="text" name="event_dates" class="form-control dynamic-meta-field" placeholder="e.g. 1st - 10th November 2026" value="{{ details.event_dates if is_edit and quote.quote_type.code == 'election' else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Constituency / Venue *</label>
+                            <input type="text" name="venue" class="form-control dynamic-meta-field" placeholder="e.g. Madurai Constituency" value="{{ details.venue if is_edit and quote.quote_type.code == 'election' else '' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Fields -->
+                <div id="fields_custom" class="dynamic-meta-input-group" style="display: none;">
+                    <div class="form-group">
+                        <label>Custom Quotation Description</label>
+                        <textarea name="custom_details" class="form-control dynamic-meta-field" rows="3" placeholder="Describe the custom scope of media services...">{{ details.custom_details if is_edit and quote.quote_type.code == 'custom' else '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Grouped sections & Line items Editor -->
+        <div style="margin-bottom: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);">Service Packages & pricing</h3>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addSection()">+ Add Grouped Section</button>
+            </div>
+            
+            <div id="sections_container">
+                {% if is_edit and quote.sections %}
+                    {% for sec in quote.sections %}
+                    <div class="quote-section-block form-section" data-index="{{ loop.index0 }}">
+                        <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                            <h3 class="section-title-label">{{ sec.title }}</h3>
+                            <div>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removeSection(this, event)">Remove Section</button>
+                                <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
+                            </div>
+                        </div>
+                        <div class="section-content">
+                            <div class="form-group">
+                                <label>Section Title</label>
+                                <input type="text" class="form-control section-title-input" value="{{ sec.title }}" oninput="updateSectionLabel(this)">
+                            </div>
+                            
+                            <table class="line-items-editor-table">
+                                <thead>
+                                    <tr>
+                                        <th>Service Description</th>
+                                        <th class="qty-col">Qty</th>
+                                        <th class="price-col">Unit Price (₹)</th>
+                                        <th class="total-col" style="text-align: right;">Total (₹)</th>
+                                        <th style="width: 50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="line-items-tbody">
+                                    {% for item in sec.line_items %}
+                                    <tr class="line-item-row">
+                                        <td>
+                                            <input type="text" class="form-control item-desc" placeholder="Service description" value="{{ item.description }}" required oninput="syncPreview()">
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control item-qty" value="{{ item.qty | int }}" step="1" min="1" style="text-align: center;" oninput="onItemMathChange(this)">
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control item-price" value="{{ item.unit_price | int }}" step="100" min="0" style="text-align: right;" oninput="onItemMathChange(this)">
+                                        </td>
+                                        <td class="item-total-cell" style="text-align: right; padding-top: 18px; font-weight: 600;">{{ item.total_price }}</td>
+                                        <td>
+                                            <button type="button" class="action-icon text-danger" onclick="removeLineItem(this)"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="addLineItem(this)">+ Add Service Item</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <!-- Default initial section for new quotes -->
+                    <div class="quote-section-block form-section" data-index="0">
+                        <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                            <h3 class="section-title-label">Grouped Package Section 1</h3>
+                            <div>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removeSection(this, event)">Remove Section</button>
+                                <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
+                            </div>
+                        </div>
+                        <div class="section-content">
+                            <div class="form-group">
+                                <label>Section Title (e.g. Muhurtham, Ad Shoot, Election Rallies)</label>
+                                <input type="text" class="form-control section-title-input" value="Standard Coverage" oninput="updateSectionLabel(this)">
+                            </div>
+                            
+                            <table class="line-items-editor-table">
+                                <thead>
+                                    <tr>
+                                        <th>Service Description</th>
+                                        <th class="qty-col">Qty</th>
+                                        <th class="price-col">Unit Price (₹)</th>
+                                        <th class="total-col" style="text-align: right;">Total (₹)</th>
+                                        <th style="width: 50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="line-items-tbody">
+                                    <tr class="line-item-row">
+                                        <td>
+                                            <input type="text" class="form-control item-desc" placeholder="Service description" required oninput="syncPreview()">
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control item-qty" value="1" step="1" min="1" style="text-align: center;" oninput="onItemMathChange(this)">
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control item-price" value="0" step="100" min="0" style="text-align: right;" oninput="onItemMathChange(this)">
+                                        </td>
+                                        <td class="item-total-cell" style="text-align: right; padding-top: 18px; font-weight: 600;">0.00</td>
+                                        <td>
+                                            <button type="button" class="action-icon text-danger" onclick="removeLineItem(this)"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="addLineItem(this)">+ Add Service Item</button>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 6. Deliverables Section -->
+        <div class="form-section">
+            <div class="section-header">
+                <h3>Deliverables & Album Specs</h3>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="section-content">
+                <table class="line-items-editor-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Description Detail</th>
+                            <th class="qty-col">Qty</th>
+                            <th style="width: 50px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="deliverables_tbody">
+                        {% if is_edit and quote.deliverables %}
+                            {% for deliv in quote.deliverables %}
+                            <tr class="deliverable-row">
+                                <td>
+                                    <select class="form-control deliv-type" onchange="syncPreview()">
+                                        <option value="photo" {% if deliv.type == 'photo' %}selected{% endif %}>Photos</option>
+                                        <option value="video" {% if deliv.type == 'video' %}selected{% endif %}>Videos / Teaser</option>
+                                        <option value="album" {% if deliv.type == 'album' %}selected{% endif %}>Album / Print</option>
+                                        <option value="turnaround" {% if deliv.type == 'turnaround' %}selected{% endif %}>Turnaround Time</option>
+                                        <option value="other" {% if deliv.type == 'other' %}selected{% endif %}>Other</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control deliv-desc" value="{{ deliv.description }}" required oninput="syncPreview()">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control deliv-qty" value="{{ deliv.qty or 1 }}" step="1" min="0" style="text-align: center;" oninput="syncPreview()">
+                                </td>
+                                <td>
+                                    <button type="button" class="action-icon text-danger" onclick="removeDeliverable(this)"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addDeliverable()">+ Add Deliverable</button>
+            </div>
+        </div>
+
+        <!-- 7. Payment Split Milestones Section -->
+        <div class="form-section">
+            <div class="section-header">
+                <h3>Payment Split Milestones</h3>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="section-content">
+                <table class="line-items-editor-table">
+                    <thead>
+                        <tr>
+                            <th>Stage Milestone Description</th>
+                            <th class="qty-col">Percent (%)</th>
+                            <th class="price-col">Amount (₹)</th>
+                            <th>Due details</th>
+                            <th style="width: 50px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="payment_splits_tbody">
+                        {% if is_edit and quote.payment_splits %}
+                            {% for split in quote.payment_splits %}
+                            <tr class="payment-split-row">
+                                <td>
+                                    <input type="text" class="form-control split-stage" value="{{ split.stage_name }}" required oninput="syncPreview()">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control split-percentage" value="{{ split.percentage | int if split.percentage else 0 }}" step="5" min="0" max="100" style="text-align: center;" oninput="onSplitPercentChange(this)">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control split-amount" value="{{ split.amount | int }}" step="500" min="0" style="text-align: right;" oninput="onSplitAmountChange(this)">
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control split-due" value="{{ split.due_date or '' }}" oninput="syncPreview()">
+                                </td>
+                                <td>
+                                    <button type="button" class="action-icon text-danger" onclick="removePaymentSplit(this)"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <!-- Default standard split rows (50% booking, 40% event, 10% album) -->
+                            <tr class="payment-split-row">
+                                <td>
+                                    <input type="text" class="form-control split-stage" value="Booking Confirmation Retainer" required oninput="syncPreview()">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control split-percentage" value="50" step="5" min="0" max="100" style="text-align: center;" oninput="onSplitPercentChange(this)">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control split-amount" value="0" step="500" min="0" style="text-align: right;" oninput="onSplitAmountChange(this)">
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control split-due" value="On Booking" oninput="syncPreview()">
+                                </td>
+                                <td>
+                                    <button type="button" class="action-icon text-danger" onclick="removePaymentSplit(this)"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="payment-split-row">
+                                <td>
+                                    <input type="text" class="form-control split-stage" value="Event Shoot Coverage" required oninput="syncPreview()">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control split-percentage" value="40" step="5" min="0" max="100" style="text-align: center;" oninput="onSplitPercentChange(this)">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control split-amount" value="0" step="500" min="0" style="text-align: right;" oninput="onSplitAmountChange(this)">
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control split-due" value="On Event Date" oninput="syncPreview()">
+                                </td>
+                                <td>
+                                    <button type="button" class="action-icon text-danger" onclick="removePaymentSplit(this)"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="payment-split-row">
+                                <td>
+                                    <input type="text" class="form-control split-stage" value="Final Deliverables & Album" required oninput="syncPreview()">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control split-percentage" value="10" step="5" min="0" max="100" style="text-align: center;" oninput="onSplitPercentChange(this)">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control split-amount" value="0" step="500" min="0" style="text-align: right;" oninput="onSplitAmountChange(this)">
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control split-due" value="On album handover" oninput="syncPreview()">
+                                </td>
+                                <td>
+                                    <button type="button" class="action-icon text-danger" onclick="removePaymentSplit(this)"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addPaymentSplit()">+ Add Milestone</button>
+            </div>
+        </div>
+
+        <!-- 8. Optional Add-ons Section -->
+        <div class="form-section">
+            <div class="section-header">
+                <h3>Optional Add-ons Included</h3>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="section-content">
+                <table class="line-items-editor-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th class="price-col">Unit Price (₹)</th>
+                            <th style="width: 80px; text-align: center;">Active</th>
+                            <th style="width: 50px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="addons_tbody">
+                        {% if is_edit and quote.add_ons %}
+                            {% for add in quote.add_ons %}
+                            <tr class="addon-row">
+                                <td>
+                                    <input type="text" class="form-control addon-desc" value="{{ add.description }}" required oninput="syncPreview()">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control addon-price" value="{{ add.price | int }}" step="500" min="0" style="text-align: right;" oninput="onAddonMathChange(this)">
+                                </td>
+                                <td style="text-align: center; padding-top: 12px;">
+                                    <input type="checkbox" class="addon-select" {% if add.is_selected %}checked{% endif %} onchange="recalculateAll()">
+                                </td>
+                                <td>
+                                    <button type="button" class="action-icon text-danger" onclick="removeAddOn(this)"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addAddOnRow()">+ Add Add-on Option</button>
+            </div>
+        </div>
+
+        <!-- 9. Proposal Notes -->
+        <div class="form-section">
+            <div class="section-header">
+                <h3>Proposal Notes & Custom Details</h3>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="section-content">
+                <div class="form-group">
+                    <label for="notes">Notes / Special Instructions</label>
+                    <textarea id="notes" class="form-control" rows="3" placeholder="Any specific requirements or project notes...">{{ quote.notes if is_edit else '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calculations panel display (Subtotal, addons, total) -->
+        <div style="background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 6px; padding: 20px; margin-top: 30px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-secondary);">Packages Subtotal:</span>
+                <span style="font-weight: 500;">₹<span id="subtotal_display">0.00</span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-secondary);">Add-ons Total:</span>
+                <span style="font-weight: 500;">₹<span id="addons_total_display">0.00</span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 5px;">
+                <span style="font-weight: 600; color: var(--accent);">GRAND TOTAL:</span>
+                <span style="font-weight: 700; color: var(--accent); font-size: 18px;">₹<span id="grand_total_display">0.00</span></span>
+            </div>
+        </div>
+
+        <!-- Footer Editor actions -->
+        <div style="display: flex; gap: 15px; margin-top: 30px; margin-bottom: 50px;">
+            <button type="button" class="btn btn-success" style="flex: 1;" onclick="saveQuote('approved')">
+                <i class="fas fa-check-circle" style="margin-right: 8px;"></i> Save & Finalize
+            </button>
+            <button type="button" class="btn btn-primary" style="flex: 1;" onclick="saveQuote('draft')">
+                <i class="fas fa-save" style="margin-right: 8px;"></i> Save Draft
+            </button>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL: LIVE PREVIEW CANVAS -->
+    <div class="preview-panel">
+        <div class="quote-canvas">
+            <!-- Canvas Header -->
+            <div class="quote-canvas-header">
+                <div class="studio-logo-container">
+                    <img src="/static/images/logo.png" alt="Rian Studioz Logo" onerror="this.style.display='none'">
+                    <div class="studio-name">{{ brand.name if brand else 'Rian Studioz' }}</div>
+                    <div class="studio-tagline">Premium Photography & Video</div>
+                </div>
+                <div class="quote-title-block">
+                    <div class="quote-label">Quotation</div>
+                    <div class="quote-number-date">
+                        No: <strong id="preview_quote_number">-</strong><br>
+                        Date: <strong id="preview_quote_date">-</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client & Studio details -->
+            <div class="quote-client-details">
+                <div>
+                    <div class="client-block-title">Proposal Prepared For</div>
+                    <div class="client-info-value" style="font-size: 14px; font-weight: 700; color: var(--quote-accent);">
+                        <span id="preview_client_name">-</span>
+                    </div>
+                    <div class="client-info-value">
+                        <i class="fas fa-phone" style="font-size: 10px; width: 15px; color: var(--quote-gold);"></i> 
+                        <span id="preview_client_phone">-</span>
+                    </div>
+                    <div class="client-info-value">
+                        <i class="fas fa-envelope" style="font-size: 10px; width: 15px; color: var(--quote-gold);"></i> 
+                        <span id="preview_client_email">-</span>
+                    </div>
+                    <div class="client-info-value" style="margin-top: 6px; white-space: pre-line;">
+                        <span id="preview_client_address">-</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="client-block-title">Studio Operations</div>
+                    <div style="font-size: 12px; line-height: 1.6; color: var(--quote-text-light);">
+                        <strong>{{ brand.name if brand else 'Rian Studioz' }}</strong><br>
+                        {{ brand.address if brand else ' Cathedral Road, Chennai' }}<br>
+                        Phone: {{ brand.phone if brand else '+91 98765 43210' }}<br>
+                        Email: {{ brand.email if brand else 'contact@rianstudioz.com' }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Specs Grid -->
+            <div class="dynamic-meta-grid" id="preview_dynamic_meta" style="display: none;">
+                <!-- Dynamically filled by preview.js -->
+            </div>
+
+            <!-- Items pricing table -->
+            <table class="quote-preview-table">
+                <thead>
+                    <tr>
+                        <th>Details of Media Services</th>
+                        <th class="qty-col">Qty</th>
+                        <th class="price-col">Unit Price</th>
+                        <th class="total-col">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="preview_line_items_tbody">
+                    <!-- Dynamically filled by preview.js -->
+                </tbody>
+            </table>
+
+            <!-- Totals right-aligned -->
+            <div class="quote-totals-block">
+                <table class="totals-table">
+                    <tr>
+                        <td style="color: var(--quote-text-light);">Subtotal:</td>
+                        <td id="preview_subtotal" style="text-align: right; font-weight: 500;">₹0.00</td>
+                    </tr>
+                    <tr id="preview_addons_row" style="display: none;">
+                        <td style="color: var(--quote-text-light);">Add-ons:</td>
+                        <td id="preview_addons" style="text-align: right; font-weight: 500;">₹0.00</td>
+                    </tr>
+                    <tr class="grand-total">
+                        <td>Total Proposal Value:</td>
+                        <td id="preview_grand_total" style="text-align: right;">₹0.00</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Deliverables Section -->
+            <div id="preview_deliverables_section" style="display: none; margin-bottom: 35px; page-break-inside: avoid;">
+                <div class="client-block-title">Deliverables & Deliverable Specifications</div>
+                <div class="deliverables-grid" id="preview_deliverables_container">
+                    <!-- Dynamic cards -->
+                </div>
+            </div>
+
+            <!-- Payments & Terms Section -->
+            <div class="payment-terms-grid">
+                <div id="preview_payment_splits_section">
+                    <div class="client-block-title">Payment Milestone Split</div>
+                    <table class="payment-milestones-table">
+                        <tbody id="preview_payment_splits_tbody">
+                            <!-- Dynamic splits -->
+                        </tbody>
+                    </table>
+                    
+                    <div style="margin-top: 25px;">
+                        <div class="client-block-title" style="font-size: 9px;">Direct Settlement Bank Details</div>
+                        <div class="bank-info">{{ brand.payment_info if brand else 'HDFC Bank Ltd\nAC: 50200087654321\nIFSC: HDFC0001234' }}</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="client-block-title">Terms & Proposal Policies</div>
+                    <div class="terms-text">{{ brand.terms_and_conditions if brand else '50% Booking advance.\n40% on shoot day.\n10% on Album delivery.' }}</div>
+                </div>
+            </div>
+            
+            <!-- Notes container -->
+            <div class="preview-notes-container" style="margin-top: 30px; display: none; page-break-inside: avoid;">
+                <div class="client-block-title">Additional Quotation Notes</div>
+                <div style="font-size: 11px; font-style: italic; color: var(--quote-text-light); line-height: 1.5;" id="preview_notes"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/preview.js"></script>
+<script src="/static/js/main.js"></script>
+<script>
+    // Set active link
+    document.getElementById("nav_new_quote").classList.add("active");
+</script>
+{% endblock %}

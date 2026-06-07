@@ -1,0 +1,32 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Caches
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environments
+.env
+.venv
+venv/
+ENV/
+env/
+
+# Databases
+*.db
+*.sqlite
+
+# Logs
+*.log
+
+# App Outputs
+app/static/pdfs/*.pdf
+
+# Editor configs
+.vscode/
+.idea/
+.DS_Store

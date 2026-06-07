@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Login | Rian Studioz Quotation Engine{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-logo">
+            <img src="/static/images/logo.png" alt="Rian Studioz Logo" onerror="this.style.display='none'">
+            <h1>Rian Studioz</h1>
+            <p style="color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 5px;">Quotation Portal</p>
+        </div>
+        
+        <form method="POST" action="/login">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Enter username" required autocomplete="off">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 30px;">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Enter password" required autocomplete="current-password">
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+            
+            {% if error %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i> {{ error }}
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock %}

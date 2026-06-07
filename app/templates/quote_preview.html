@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposal Quotation {{ quote.quotation_number }}</title>
+    <!-- WeasyPrint will load these when base_url is set to root -->
+    {% if is_pdf %}
+    <link rel="stylesheet" href="app/static/css/style.css">
+    {% else %}
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% endif %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Standalone centering styles */
+        body.preview-page-body {
+            background-color: #f3f4f6;
+            color: #1f2937;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .standalone-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Clean document styling for print/pdf */
+        @media print {
+            body.preview-page-body {
+                background-color: #ffffff;
+                padding: 0;
+            }
+            .standalone-container {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="{% if not is_pdf %}preview-page-body{% endif %}">
+    <div class="standalone-container">
+        
+        <!-- Action bar for online visitors (hidden in PDF compile) -->
+        {% if not is_pdf %}
+        <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; background-color: #1a1a1e; padding: 15px 20px; border-radius: 6px; border: 1px solid #2e2e36;">
+            <div>
+                <span style="color: #9ca3af; font-size: 13px;">Status:</span>
+                <span class="status-badge status-{{ quote.status }}" style="margin-left: 8px;">{{ quote.status }}</span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                {% if quote.pdf_path %}
+                <a href="{{ quote.pdf_path }}" class="btn btn-primary btn-sm" style="font-size: 12px; text-decoration: none;" download>
+                    <i class="fas fa-download" style="margin-right: 6px;"></i> Download PDF
+                </a>
+                {% endif %}
+                <button onclick="window.print()" class="btn btn-secondary btn-sm" style="font-size: 12px;">
+                    <i class="fas fa-print" style="margin-right: 6px;"></i> Print Document
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="quote-canvas">
+            <!-- Canvas Header -->
+            <div class="quote-canvas-header">
+                <div class="studio-logo-container">
+                    {% if is_pdf %}
+                    <img src="app/static/images/logo.png" alt="Rian Studioz Logo" onerror="this.style.display='none'" style="max-height: 60px;">
+                    {% else %}
+                    <img src="/static/images/logo.png" alt="Rian Studioz Logo" onerror="this.style.display='none'" style="max-height: 60px;">
+                    {% endif %}
+                    <div class="studio-name">{{ quote.brand.name }}</div>
+                    <div class="studio-tagline">Premium Photography & Video</div>
+                </div>
+                <div class="quote-title-block">
+                    <div class="quote-label">Quotation</div>
+                    <div class="quote-number-date">
+                        No: <strong>{{ quote.quotation_number }}</strong><br>
+                        Date: <strong>{{ quote.quotation_date.strftime("%d %b %Y") if quote.quotation_date else "" }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client & Studio details -->
+            <div class="quote-client-details">
+                <div>
+                    <div class="client-block-title">Proposal Prepared For</div>
+                    <div class="client-info-value" style="font-size: 14px; font-weight: 700; color: var(--quote-accent);">
+                        {{ quote.contact.name }}
+                    </div>
+                    {% if quote.contact.phone %}
+                    <div class="client-info-value">
+                        <i class="fas fa-phone" style="font-size: 10px; width: 15px; color: var(--quote-gold);"></i> 
+                        {{ quote.contact.phone }}
+                    </div>
+                    {% endif %}
+                    {% if quote.contact.email %}
+                    <div class="client-info-value">
+                        <i class="fas fa-envelope" style="font-size: 10px; width: 15px; color: var(--quote-gold);"></i> 
+                        {{ quote.contact.email }}
+                    </div>
+                    {% endif %}
+                    {% if quote.contact.address %}
+                    <div class="client-info-value" style="margin-top: 6px; white-space: pre-line;">
+                        {{ quote.contact.address }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="client-block-title">Studio Operations</div>
+                    <div style="font-size: 11px; line-height: 1.6; color: var(--quote-text-light);">
+                        <strong>{{ quote.brand.name }}</strong><br>
+                        {{ quote.brand.address }}<br>
+                        Phone: {{ quote.brand.phone }}<br>
+                        Email: {{ quote.brand.email }}<br>
+                        Web: {{ quote.brand.website }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Specs Grid -->
+            {% if details %}
+            <div class="dynamic-meta-grid" id="preview_dynamic_meta">
+                {% if details.groom_name %}
+                <div class="dynamic-meta-item">
+                    <span>Groom's Name</span>
+                    <strong>{{ details.groom_name }}</strong>
+                </div>
+                {% endif %}
+                {% if details.bride_name %}
+                <div class="dynamic-meta-item">
+                    <span>Bride's Name</span>
+                    <strong>{{ details.bride_name }}</strong>
+                </div>
+                {% endif %}
+                {% if details.event_dates %}
+                <div class="dynamic-meta-item">
+                    <span>Event Dates</span>
+                    <strong>{{ details.event_dates }}</strong>
+                </div>
+                {% endif %}
+                {% if details.client_name and quote.quote_type.code == 'retirement' %}
+                <div class="dynamic-meta-item">
+                    <span>Retiree Name</span>
+                    <strong>{{ details.client_name }}</strong>
+                </div>
+                {% endif %}
+                {% if details.event_date %}
+                <div class="dynamic-meta-item">
+                    <span>Event/Shoot Date</span>
+                    <strong>{{ details.event_date }}</strong>
+                </div>
+                {% endif %}
+                {% if details.event_name %}
+                <div class="dynamic-meta-item">
+                    <span>Event / Campaign Name</span>
+                    <strong>{{ details.event_name }}</strong>
+                </div>
+                {% endif %}
+                {% if details.campaign_name %}
+                <div class="dynamic-meta-item">
+                    <span>Candidate Name</span>
+                    <strong>{{ details.campaign_name }}</strong>
+                </div>
+                {% endif %}
+                {% if details.venue %}
+                <div class="dynamic-meta-item">
+                    <span>Location / Venue</span>
+                    <strong>{{ details.venue }}</strong>
+                </div>
+                {% endif %}
+                {% if details.custom_details %}
+                <div class="dynamic-meta-item" style="grid-column: span 2;">
+                    <span>Scope Details</span>
+                    <strong>{{ details.custom_details }}</strong>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Items pricing table -->
+            <table class="quote-preview-table">
+                <thead>
+                    <tr>
+                        <th>Details of Media Services</th>
+                        <th class="qty-col">Qty</th>
+                        <th class="price-col">Unit Price</th>
+                        <th class="total-col">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="preview_line_items_tbody">
+                    {% for sec in quote.sections %}
+                        <tr class="section-row">
+                            <td colspan="4">{{ sec.title }}</td>
+                        </tr>
+                        {% for item in sec.line_items %}
+                        <tr>
+                            <td>{{ item.description }}</td>
+                            <td class="qty-col">{{ item.qty | int }}</td>
+                            <td class="price-col">₹{{ "{:,.2f}".format(item.unit_price) }}</td>
+                            <td class="total-col">₹{{ "{:,.2f}".format(item.total_price) }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% endfor %}
+
+                    <!-- Add-ons breakdown inside preview table if present -->
+                    {% set active_addons = [] %}
+                    {% for add in quote.add_ons %}
+                        {% if add.is_selected %}
+                            {% set _ = active_addons.append(add) %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if active_addons %}
+                        <tr class="section-row">
+                            <td colspan="4">Optional Add-ons Included</td>
+                        </tr>
+                        {% for add in active_addons %}
+                        <tr>
+                            <td>{{ add.description }} (Optional Add-on)</td>
+                            <td class="qty-col">1</td>
+                            <td class="price-col">₹{{ "{:,.2f}".format(add.price) }}</td>
+                            <td class="total-col">₹{{ "{:,.2f}".format(add.price) }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+
+            <!-- Totals right-aligned -->
+            <div class="quote-totals-block">
+                <table class="totals-table">
+                    <!-- If we have active addons, show the subtotal and addons rows -->
+                    {% if active_addons %}
+                    <tr>
+                        <td style="color: var(--quote-text-light);">Packages Subtotal:</td>
+                        {% set p_sub = quote.total_amount - (active_addons | map(attribute='price') | sum) %}
+                        <td style="text-align: right; font-weight: 500;">₹{{ "{:,.2f}".format(p_sub) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color: var(--quote-text-light);">Add-ons Total:</td>
+                        {% set a_sub = active_addons | map(attribute='price') | sum %}
+                        <td style="text-align: right; font-weight: 500;">₹{{ "{:,.2f}".format(a_sub) }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr class="grand-total">
+                        <td>Total Proposal Value:</td>
+                        <td style="text-align: right;">₹{{ total_formatted }}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Deliverables Section -->
+            {% if quote.deliverables %}
+            <div id="preview_deliverables_section" style="margin-bottom: 35px; page-break-inside: avoid;">
+                <div class="client-block-title">Deliverables & Deliverable Specifications</div>
+                <div class="deliverables-grid">
+                    {% for deliv in quote.deliverables %}
+                    <div class="deliverable-card">
+                        <div class="deliverable-card-title">
+                            {% if deliv.type == 'photo' %}Photos Output
+                            {% elif deliv.type == 'video' %}Videos Output
+                            {% elif deliv.type == 'album' %}Album Output
+                            {% elif deliv.type == 'turnaround' %}Turnaround
+                            {% else %}Deliverable{% endif %}
+                            {% if deliv.qty and deliv.qty > 0 %}({{ deliv.qty }}){% endif %}
+                        </div>
+                        <div>{{ deliv.description }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Payments & Terms Section -->
+            <div class="payment-terms-grid">
+                <div>
+                    {% if quote.payment_splits %}
+                    <div class="client-block-title">Payment Milestone Split</div>
+                    <table class="payment-milestones-table">
+                        <tbody>
+                            {% for split in quote.payment_splits %}
+                            <tr>
+                                <td><strong>{{ split.stage_name }}</strong> {% if split.due_date %}({{ split.due_date }}){% endif %}</td>
+                                <td style="text-align: right; width: 60px;">{% if split.percentage and split.percentage > 0 %}{{ split.percentage | int }}%{% endif %}</td>
+                                <td style="text-align: right; font-weight: 600; width: 120px;">₹{{ "{:,.2f}".format(split.amount) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                    
+                    <div style="margin-top: 25px;">
+                        <div class="client-block-title" style="font-size: 9px;">Direct Settlement Bank Details</div>
+                        <div class="bank-info">{{ quote.brand.payment_info }}</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="client-block-title">Terms & Proposal Policies</div>
+                    <div class="terms-text">{{ quote.brand.terms_and_conditions }}</div>
+                </div>
+            </div>
+            
+            <!-- Notes container -->
+            {% if quote.notes and quote.notes.strip() != "" %}
+            <div class="preview-notes-container" style="margin-top: 30px; page-break-inside: avoid;">
+                <div class="client-block-title">Additional Quotation Notes</div>
+                <div style="font-size: 11px; font-style: italic; color: var(--quote-text-light); line-height: 1.5;">
+                    {{ quote.notes }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
