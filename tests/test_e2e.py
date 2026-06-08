@@ -99,7 +99,7 @@ def test_workflow(server):
         # Verify right side live preview updates
         page.wait_for_selector("#preview_client_name")
         assert page.locator("#preview_client_name").text_content() == "E2E Test Client"
-        assert "₹25,000.00" in page.locator("#preview_grand_total").text_content()
+        assert "₹48,000.00" in page.locator("#preview_grand_total").text_content()
         
         # Click "Save & Finalize"
         page.click("button:has-text('Save & Finalize')")

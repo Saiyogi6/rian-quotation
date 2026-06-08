@@ -23,18 +23,28 @@
         <!-- 1. Quote Type Presets Selector -->
         <div class="form-group">
             <label>Select Quotation Preset Type</label>
-            <input type="hidden" id="quote_type_code" name="quote_type_code" value="{{ quote.quote_type.code if is_edit else (selected_type.code if selected_type else 'wedding') }}">
+            <input type="hidden" id="quote_type_code" name="quote_type_code" value="{{ quote.quote_type.code if is_edit else (selected_type.code if selected_type else 'wedding_reception') }}">
             <div class="preset-cards">
                 {% for qt in quote_types %}
                 <div class="preset-card {{ 'active' if (is_edit and quote.quote_type.code == qt.code) or (not is_edit and selected_type.code == qt.code) else '' }}" data-type="{{ qt.code }}">
-                    {% if qt.code == 'wedding' %}
+                    {% if qt.code == 'wedding_reception' %}
                     <i class="fas fa-ring"></i>
+                    {% elif qt.code == 'reception_only' %}
+                    <i class="fas fa-glass-cheers"></i>
+                    {% elif qt.code == 'marriage_only' %}
+                    <i class="fas fa-heart"></i>
+                    {% elif qt.code == 'muslim_wedding' %}
+                    <i class="fas fa-moon"></i>
                     {% elif qt.code == 'retirement' %}
                     <i class="fas fa-award"></i>
                     {% elif qt.code == 'convocation_ad' %}
                     <i class="fas fa-graduation-cap"></i>
                     {% elif qt.code == 'election' %}
                     <i class="fas fa-bullhorn"></i>
+                    {% elif qt.code == 'birthday' %}
+                    <i class="fas fa-birthday-cake"></i>
+                    {% elif qt.code == 'baby_shower' %}
+                    <i class="fas fa-baby"></i>
                     {% else %}
                     <i class="fas fa-sliders-h"></i>
                     {% endif %}
@@ -99,29 +109,121 @@
                 <i class="fas fa-chevron-down"></i>
             </div>
             <div class="section-content">
-                <!-- Wedding Fields -->
-                <div id="fields_wedding" class="dynamic-meta-input-group" style="display: none;">
+                <!-- 1. Wedding & Reception Fields -->
+                <div id="fields_wedding_reception" class="dynamic-meta-input-group" style="display: none;">
                     <div class="form-grid-2">
                         <div class="form-group">
                             <label>Groom's Name *</label>
-                            <input type="text" name="groom_name" class="form-control dynamic-meta-field" value="{{ details.groom_name if is_edit and quote.quote_type.code == 'wedding' else '' }}">
+                            <input type="text" name="groom_name" class="form-control dynamic-meta-field" value="{{ details.groom_name if is_edit and quote.quote_type.code == 'wedding_reception' else '' }}">
                         </div>
                         <div class="form-group">
                             <label>Bride's Name *</label>
-                            <input type="text" name="bride_name" class="form-control dynamic-meta-field" value="{{ details.bride_name if is_edit and quote.quote_type.code == 'wedding' else '' }}">
+                            <input type="text" name="bride_name" class="form-control dynamic-meta-field" value="{{ details.bride_name if is_edit and quote.quote_type.code == 'wedding_reception' else '' }}">
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Event Dates *</label>
-                        <input type="text" name="event_dates" class="form-control dynamic-meta-field" placeholder="e.g. September 12th & 13th, 2026" value="{{ details.event_dates if is_edit and quote.quote_type.code == 'wedding' else '' }}">
+                        <input type="text" name="event_dates" class="form-control dynamic-meta-field" placeholder="e.g. September 12th & 13th, 2026" value="{{ details.event_dates if is_edit and quote.quote_type.code == 'wedding_reception' else '' }}">
                     </div>
                     <div class="form-group">
                         <label>Venue(s) *</label>
-                        <input type="text" name="venue" class="form-control dynamic-meta-field" placeholder="e.g. MRC Kalyana Mandapam, Santhome, Chennai" value="{{ details.venue if is_edit and quote.quote_type.code == 'wedding' else '' }}">
+                        <input type="text" name="venue" class="form-control dynamic-meta-field" placeholder="e.g. MRC Kalyana Mandapam, Chennai" value="{{ details.venue if is_edit and quote.quote_type.code == 'wedding_reception' else '' }}">
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Contact Number</label>
+                            <input type="text" name="contact_number" class="form-control dynamic-meta-field" placeholder="e.g. +91 99999 88888" value="{{ details.contact_number if is_edit and quote.quote_type.code == 'wedding_reception' else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="text" name="email" class="form-control dynamic-meta-field" placeholder="e.g. email@example.com" value="{{ details.email if is_edit and quote.quote_type.code == 'wedding_reception' else '' }}">
+                        </div>
                     </div>
                 </div>
 
-                <!-- Retirement Fields -->
+                <!-- 2. Reception Only Fields -->
+                <div id="fields_reception_only" class="dynamic-meta-input-group" style="display: none;">
+                    <div class="form-group">
+                        <label>Bride/Groom or Client Name *</label>
+                        <input type="text" name="client_name" class="form-control dynamic-meta-field" value="{{ details.client_name if is_edit and quote.quote_type.code == 'reception_only' else '' }}">
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Event Date *</label>
+                            <input type="text" name="event_date" class="form-control dynamic-meta-field" placeholder="e.g. 28th October 2026" value="{{ details.event_date if is_edit and quote.quote_type.code == 'reception_only' else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Venue *</label>
+                            <input type="text" name="venue" class="form-control dynamic-meta-field" placeholder="e.g. Vani Mahal, Chennai" value="{{ details.venue if is_edit and quote.quote_type.code == 'reception_only' else '' }}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Info</label>
+                        <input type="text" name="contact" class="form-control dynamic-meta-field" placeholder="e.g. Phone or email" value="{{ details.contact if is_edit and quote.quote_type.code == 'reception_only' else '' }}">
+                    </div>
+                </div>
+
+                <!-- 3. Marriage Only Fields -->
+                <div id="fields_marriage_only" class="dynamic-meta-input-group" style="display: none;">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Groom's Name *</label>
+                            <input type="text" name="groom_name" class="form-control dynamic-meta-field" value="{{ details.groom_name if is_edit and quote.quote_type.code == 'marriage_only' else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Bride's Name *</label>
+                            <input type="text" name="bride_name" class="form-control dynamic-meta-field" value="{{ details.bride_name if is_edit and quote.quote_type.code == 'marriage_only' else '' }}">
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Marriage Date *</label>
+                            <input type="text" name="marriage_date" class="form-control dynamic-meta-field" placeholder="e.g. 28th October 2026" value="{{ details.marriage_date if is_edit and quote.quote_type.code == 'marriage_only' else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Venue *</label>
+                            <input type="text" name="venue" class="form-control dynamic-meta-field" placeholder="e.g. Temple, Chennai" value="{{ details.venue if is_edit and quote.quote_type.code == 'marriage_only' else '' }}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Info</label>
+                        <input type="text" name="contact" class="form-control dynamic-meta-field" placeholder="e.g. Phone or email" value="{{ details.contact if is_edit and quote.quote_type.code == 'marriage_only' else '' }}">
+                    </div>
+                </div>
+
+                <!-- 4. Muslim Wedding Fields -->
+                <div id="fields_muslim_wedding" class="dynamic-meta-input-group" style="display: none;">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Groom's Name *</label>
+                            <input type="text" name="groom_name" class="form-control dynamic-meta-field" value="{{ details.groom_name if is_edit and quote.quote_type.code == 'muslim_wedding' else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Bride's Name *</label>
+                            <input type="text" name="bride_name" class="form-control dynamic-meta-field" value="{{ details.bride_name if is_edit and quote.quote_type.code == 'muslim_wedding' else '' }}">
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Nikah Date *</label>
+                            <input type="text" name="nikah_date" class="form-control dynamic-meta-field" placeholder="e.g. 28th October 2026" value="{{ details.nikah_date if is_edit and quote.quote_type.code == 'muslim_wedding' else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Reception Date (Optional)</label>
+                            <input type="text" name="reception_date" class="form-control dynamic-meta-field" placeholder="e.g. 29th October 2026" value="{{ details.reception_date if is_edit and quote.quote_type.code == 'muslim_wedding' else '' }}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Venue *</label>
+                        <input type="text" name="venue" class="form-control dynamic-meta-field" placeholder="e.g. Mosque Hall, Chennai" value="{{ details.venue if is_edit and quote.quote_type.code == 'muslim_wedding' else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Info</label>
+                        <input type="text" name="contact" class="form-control dynamic-meta-field" placeholder="e.g. Phone or email" value="{{ details.contact if is_edit and quote.quote_type.code == 'muslim_wedding' else '' }}">
+                    </div>
+                </div>
+
+                <!-- 5. Retirement Fields -->
                 <div id="fields_retirement" class="dynamic-meta-input-group" style="display: none;">
                     <div class="form-group">
                         <label>Retiree Name *</label>
@@ -137,9 +239,13 @@
                             <input type="text" name="venue" class="form-control dynamic-meta-field" placeholder="e.g. Vani Mahal, Chennai" value="{{ details.venue if is_edit and quote.quote_type.code == 'retirement' else '' }}">
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label>Contact Info</label>
+                        <input type="text" name="contact" class="form-control dynamic-meta-field" placeholder="e.g. Phone or email" value="{{ details.contact if is_edit and quote.quote_type.code == 'retirement' else '' }}">
+                    </div>
                 </div>
 
-                <!-- Convocation Fields -->
+                <!-- 6. Convocation Fields -->
                 <div id="fields_convocation_ad" class="dynamic-meta-input-group" style="display: none;">
                     <div class="form-group">
                         <label>Event / Campaign Name *</label>
@@ -155,9 +261,13 @@
                             <input type="text" name="venue" class="form-control dynamic-meta-field" placeholder="e.g. College Auditorium, Trichy" value="{{ details.venue if is_edit and quote.quote_type.code == 'convocation_ad' else '' }}">
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label>Contact Info</label>
+                        <input type="text" name="contact" class="form-control dynamic-meta-field" placeholder="e.g. Phone or email" value="{{ details.contact if is_edit and quote.quote_type.code == 'convocation_ad' else '' }}">
+                    </div>
                 </div>
 
-                <!-- Election Fields -->
+                <!-- 7. Election Fields -->
                 <div id="fields_election" class="dynamic-meta-input-group" style="display: none;">
                     <div class="form-group">
                         <label>Candidate / Campaign Name *</label>
@@ -173,14 +283,86 @@
                             <input type="text" name="venue" class="form-control dynamic-meta-field" placeholder="e.g. Madurai Constituency" value="{{ details.venue if is_edit and quote.quote_type.code == 'election' else '' }}">
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label>Contact Info</label>
+                        <input type="text" name="contact" class="form-control dynamic-meta-field" placeholder="e.g. Phone or email" value="{{ details.contact if is_edit and quote.quote_type.code == 'election' else '' }}">
+                    </div>
                 </div>
 
-                <!-- Custom Fields -->
+                <!-- 8. Birthday Fields -->
+                <div id="fields_birthday" class="dynamic-meta-input-group" style="display: none;">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Celebrant Name *</label>
+                            <input type="text" name="celebrant_name" class="form-control dynamic-meta-field" value="{{ details.celebrant_name if is_edit and quote.quote_type.code == 'birthday' else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Age (Optional)</label>
+                            <input type="text" name="age" class="form-control dynamic-meta-field" placeholder="e.g. 5 Years" value="{{ details.age if is_edit and quote.quote_type.code == 'birthday' else '' }}">
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Event Date *</label>
+                            <input type="text" name="event_date" class="form-control dynamic-meta-field" placeholder="e.g. 28th October 2026" value="{{ details.event_date if is_edit and quote.quote_type.code == 'birthday' else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Venue *</label>
+                            <input type="text" name="venue" class="form-control dynamic-meta-field" placeholder="e.g. Banquet Hall, Chennai" value="{{ details.venue if is_edit and quote.quote_type.code == 'birthday' else '' }}">
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Parent Name (Optional)</label>
+                            <input type="text" name="parent_name" class="form-control dynamic-meta-field" placeholder="e.g. Rajesh" value="{{ details.parent_name if is_edit and quote.quote_type.code == 'birthday' else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Info</label>
+                            <input type="text" name="contact" class="form-control dynamic-meta-field" placeholder="e.g. Phone or email" value="{{ details.contact if is_edit and quote.quote_type.code == 'birthday' else '' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 9. Baby Shower Fields -->
+                <div id="fields_baby_shower" class="dynamic-meta-input-group" style="display: none;">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Mother's Name *</label>
+                            <input type="text" name="mother_name" class="form-control dynamic-meta-field" value="{{ details.mother_name if is_edit and quote.quote_type.code == 'baby_shower' else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Father's Name (Optional)</label>
+                            <input type="text" name="father_name" class="form-control dynamic-meta-field" value="{{ details.father_name if is_edit and quote.quote_type.code == 'baby_shower' else '' }}">
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Event Date *</label>
+                            <input type="text" name="event_date" class="form-control dynamic-meta-field" placeholder="e.g. 28th October 2026" value="{{ details.event_date if is_edit and quote.quote_type.code == 'baby_shower' else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Venue *</label>
+                            <input type="text" name="venue" class="form-control dynamic-meta-field" placeholder="e.g. Banquet Hall, Chennai" value="{{ details.venue if is_edit and quote.quote_type.code == 'baby_shower' else '' }}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Info</label>
+                        <input type="text" name="contact" class="form-control dynamic-meta-field" placeholder="e.g. Phone or email" value="{{ details.contact if is_edit and quote.quote_type.code == 'baby_shower' else '' }}">
+                    </div>
+                </div>
+
+                <!-- 10. Custom Fields -->
                 <div id="fields_custom" class="dynamic-meta-input-group" style="display: none;">
                     <div class="form-group">
                         <label>Custom Quotation Description</label>
                         <textarea name="custom_details" class="form-control dynamic-meta-field" rows="3" placeholder="Describe the custom scope of media services...">{{ details.custom_details if is_edit and quote.quote_type.code == 'custom' else '' }}</textarea>
                     </div>
+                </div>
+
+                <!-- Intro Greeting Content (Always editable override) -->
+                <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <label for="intro_content">Intro Greeting Note *</label>
+                    <textarea id="intro_content" class="form-control" rows="3" placeholder="Preloaded from preset...">{{ quote.intro_content if is_edit else '' }}</textarea>
                 </div>
             </div>
         </div>
@@ -212,16 +394,21 @@
                             <table class="line-items-editor-table">
                                 <thead>
                                     <tr>
+                                        <th style="width: 40px; text-align: center;">Active</th>
                                         <th>Service Description</th>
                                         <th class="qty-col">Qty</th>
                                         <th class="price-col">Unit Price (₹)</th>
                                         <th class="total-col" style="text-align: right;">Total (₹)</th>
+                                        <th>Group / Category / Order</th>
                                         <th style="width: 50px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody class="line-items-tbody">
                                     {% for item in sec.line_items %}
                                     <tr class="line-item-row">
+                                        <td style="text-align: center; vertical-align: middle;">
+                                            <input type="checkbox" class="item-select" {% if item.is_selected %}checked{% endif %} onchange="recalculateAll()">
+                                        </td>
                                         <td>
                                             <input type="text" class="form-control item-desc" placeholder="Service description" value="{{ item.description }}" required oninput="syncPreview()">
                                         </td>
@@ -232,6 +419,18 @@
                                             <input type="number" class="form-control item-price" value="{{ item.unit_price | int }}" step="100" min="0" style="text-align: right;" oninput="onItemMathChange(this)">
                                         </td>
                                         <td class="item-total-cell" style="text-align: right; padding-top: 18px; font-weight: 600;">{{ item.total_price }}</td>
+                                        <td>
+                                            <div style="display: flex; gap: 5px;">
+                                                <input type="text" class="form-control item-group-name" placeholder="Group" value="{{ item.group_name or sec.title }}" style="font-size: 11px;" oninput="syncPreview()">
+                                                <select class="form-control item-cat" style="font-size: 11px;" onchange="syncPreview()">
+                                                    <option value="photo" {% if item.item_category == 'photo' %}selected{% endif %}>Photo</option>
+                                                    <option value="video" {% if item.item_category == 'video' %}selected{% endif %}>Video</option>
+                                                    <option value="album" {% if item.item_category == 'album' %}selected{% endif %}>Album</option>
+                                                    <option value="other" {% if item.item_category == 'other' or not item.item_category %}selected{% endif %}>Other</option>
+                                                </select>
+                                                <input type="number" class="form-control item-display-order" value="{{ item.display_order or loop.index0 }}" min="0" style="width: 50px; font-size: 11px;" oninput="syncPreview()">
+                                            </div>
+                                        </td>
                                         <td>
                                             <button type="button" class="action-icon text-danger" onclick="removeLineItem(this)"><i class="fas fa-trash"></i></button>
                                         </td>
@@ -262,15 +461,20 @@
                             <table class="line-items-editor-table">
                                 <thead>
                                     <tr>
+                                        <th style="width: 40px; text-align: center;">Active</th>
                                         <th>Service Description</th>
                                         <th class="qty-col">Qty</th>
                                         <th class="price-col">Unit Price (₹)</th>
                                         <th class="total-col" style="text-align: right;">Total (₹)</th>
+                                        <th>Group / Category / Order</th>
                                         <th style="width: 50px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody class="line-items-tbody">
                                     <tr class="line-item-row">
+                                        <td style="text-align: center; vertical-align: middle;">
+                                            <input type="checkbox" class="item-select" checked onchange="recalculateAll()">
+                                        </td>
                                         <td>
                                             <input type="text" class="form-control item-desc" placeholder="Service description" required oninput="syncPreview()">
                                         </td>
@@ -281,6 +485,18 @@
                                             <input type="number" class="form-control item-price" value="0" step="100" min="0" style="text-align: right;" oninput="onItemMathChange(this)">
                                         </td>
                                         <td class="item-total-cell" style="text-align: right; padding-top: 18px; font-weight: 600;">0.00</td>
+                                        <td>
+                                            <div style="display: flex; gap: 5px;">
+                                                <input type="text" class="form-control item-group-name" placeholder="Group" value="Standard Coverage" style="font-size: 11px;" oninput="syncPreview()">
+                                                <select class="form-control item-cat" style="font-size: 11px;" onchange="syncPreview()">
+                                                    <option value="photo" selected>Photo</option>
+                                                    <option value="video">Video</option>
+                                                    <option value="album">Album</option>
+                                                    <option value="other">Other</option>
+                                                </select>
+                                                <input type="number" class="form-control item-display-order" value="0" min="0" style="width: 50px; font-size: 11px;" oninput="syncPreview()">
+                                            </div>
+                                        </td>
                                         <td>
                                             <button type="button" class="action-icon text-danger" onclick="removeLineItem(this)"><i class="fas fa-trash"></i></button>
                                         </td>
@@ -304,9 +520,13 @@
                 <table class="line-items-editor-table">
                     <thead>
                         <tr>
-                            <th>Type</th>
+                            <th style="width: 40px; text-align: center;">Active</th>
+                            <th style="width: 120px;">Type / Category</th>
                             <th>Description Detail</th>
                             <th class="qty-col">Qty</th>
+                            <th class="price-col">Price (₹)</th>
+                            <th style="width: 80px; text-align: center;">Complimentary</th>
+                            <th>Group / Order</th>
                             <th style="width: 50px;"></th>
                         </tr>
                     </thead>
@@ -314,6 +534,9 @@
                         {% if is_edit and quote.deliverables %}
                             {% for deliv in quote.deliverables %}
                             <tr class="deliverable-row">
+                                <td style="text-align: center; vertical-align: middle;">
+                                    <input type="checkbox" class="deliv-select" {% if deliv.is_selected %}checked{% endif %} onchange="recalculateAll()">
+                                </td>
                                 <td>
                                     <select class="form-control deliv-type" onchange="syncPreview()">
                                         <option value="photo" {% if deliv.type == 'photo' %}selected{% endif %}>Photos</option>
@@ -328,6 +551,18 @@
                                 </td>
                                 <td>
                                     <input type="number" class="form-control deliv-qty" value="{{ deliv.qty or 1 }}" step="1" min="0" style="text-align: center;" oninput="syncPreview()">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control deliv-price" value="{{ deliv.price | int }}" step="100" min="0" style="text-align: right;" oninput="onDelivPriceChange(this)" {% if deliv.is_complimentary %}disabled{% endif %}>
+                                </td>
+                                <td style="text-align: center; vertical-align: middle;">
+                                    <input type="checkbox" class="deliv-complimentary" {% if deliv.is_complimentary %}checked{% endif %} onchange="onDelivComplimentaryChange(this)">
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 5px;">
+                                        <input type="text" class="form-control deliv-group-name" placeholder="Group" value="{{ deliv.group_name or '' }}" style="font-size: 11px;" oninput="syncPreview()">
+                                        <input type="number" class="form-control deliv-display-order" value="{{ deliv.display_order or loop.index0 }}" min="0" style="width: 50px; font-size: 11px;" oninput="syncPreview()">
+                                    </div>
                                 </td>
                                 <td>
                                     <button type="button" class="action-icon text-danger" onclick="removeDeliverable(this)"><i class="fas fa-trash"></i></button>
@@ -494,15 +729,43 @@
             </div>
         </div>
 
-        <!-- Calculations panel display (Subtotal, addons, total) -->
+        <!-- 10. Discount Settings Section -->
+        <div class="form-section">
+            <div class="section-header">
+                <h3>Discount Settings</h3>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="section-content">
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="discount_type">Discount Type</label>
+                        <select id="discount_type" class="form-control" onchange="recalculateAll()">
+                            <option value="none" {% if quote and quote.discount_type == 'none' %}selected{% endif %}>No Discount</option>
+                            <option value="fixed" {% if quote and quote.discount_type == 'fixed' %}selected{% endif %}>Fixed Amount (₹)</option>
+                            <option value="percentage" {% if quote and quote.discount_type == 'percentage' %}selected{% endif %}>Percentage (%)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="discount_value">Discount Value</label>
+                        <input type="number" id="discount_value" class="form-control" value="{{ quote.discount_value | int if quote else 0 }}" min="0" oninput="recalculateAll()">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calculations panel display (Subtotal, addons, discount, total) -->
         <div style="background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 6px; padding: 20px; margin-top: 30px; display: flex; flex-direction: column; gap: 10px;">
             <div style="display: flex; justify-content: space-between;">
-                <span style="color: var(--text-secondary);">Packages Subtotal:</span>
+                <span style="color: var(--text-secondary);">Packages & Paid Deliverables Subtotal:</span>
                 <span style="font-weight: 500;">₹<span id="subtotal_display">0.00</span></span>
             </div>
             <div style="display: flex; justify-content: space-between;">
                 <span style="color: var(--text-secondary);">Add-ons Total:</span>
                 <span style="font-weight: 500;">₹<span id="addons_total_display">0.00</span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-secondary);">Discount:</span>
+                <span style="font-weight: 500; color: #ef4444;">-₹<span id="discount_display">0.00</span></span>
             </div>
             <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 5px;">
                 <span style="font-weight: 600; color: var(--accent);">GRAND TOTAL:</span>
@@ -570,6 +833,11 @@
                 </div>
             </div>
 
+            <!-- Intro Note / Greeting -->
+            <div class="intro-note-container" id="preview_intro_content_container" style="display: none; margin-bottom: 25px; padding: 18px 20px; background-color: #fafafa; border-left: 3px solid var(--quote-accent, #c5a880); border-radius: 4px; font-size: 13px; line-height: 1.6; color: var(--quote-text, #374151); font-style: italic;">
+                <span id="preview_intro_content"></span>
+            </div>
+
             <!-- Dynamic Specs Grid -->
             <div class="dynamic-meta-grid" id="preview_dynamic_meta" style="display: none;">
                 <!-- Dynamically filled by preview.js -->
@@ -600,6 +868,10 @@
                     <tr id="preview_addons_row" style="display: none;">
                         <td style="color: var(--quote-text-light);">Add-ons:</td>
                         <td id="preview_addons" style="text-align: right; font-weight: 500;">₹0.00</td>
+                    </tr>
+                    <tr id="preview_discount_row" style="display: none;">
+                        <td style="color: var(--quote-text-light);">Discount:</td>
+                        <td id="preview_discount" style="text-align: right; font-weight: 500; color: #ef4444;">-₹0.00</td>
                     </tr>
                     <tr class="grand-total">
                         <td>Total Proposal Value:</td>

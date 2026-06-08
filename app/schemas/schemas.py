@@ -51,6 +51,10 @@ class LineItemBase(BaseModel):
     qty: Decimal = Decimal('1.00')
     unit_price: Decimal = Decimal('0.00')
     total_price: Optional[Decimal] = None
+    is_selected: bool = True
+    group_name: Optional[str] = None
+    display_order: int = 0
+    item_category: Optional[str] = None
 
 class LineItemCreate(LineItemBase):
     pass
@@ -82,6 +86,12 @@ class DeliverableBase(BaseModel):
     type: str # photo, video, album, turnaround, other
     description: str
     qty: Optional[int] = None
+    is_selected: bool = True
+    price: Decimal = Decimal('0.00')
+    is_complimentary: bool = False
+    group_name: Optional[str] = None
+    display_order: int = 0
+    item_category: Optional[str] = None
 
 class DeliverableCreate(DeliverableBase):
     pass
@@ -134,6 +144,9 @@ class QuoteCreate(BaseModel):
     quotation_date: date
     status: str = "draft" # draft, sent, approved, cancelled
     notes: Optional[str] = None
+    discount_type: str = "none"
+    discount_value: Decimal = Decimal('0.00')
+    intro_content: Optional[str] = None
     
     brand_id: int
     quote_type_code: str # e.g. "wedding" -> we will map to quote_type_id
@@ -162,6 +175,9 @@ class QuoteResponse(BaseModel):
     total_amount: Decimal
     pdf_path: Optional[str] = None
     notes: Optional[str] = None
+    discount_type: str
+    discount_value: Decimal
+    intro_content: Optional[str] = None
     
     brand: BrandResponse
     quote_type: QuoteTypeResponse

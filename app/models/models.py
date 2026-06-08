@@ -65,6 +65,11 @@ class Quote(Base):
     pdf_path = Column(String(255), nullable=True)
     notes = Column(Text, nullable=True)
     
+    # New discount fields and intro content
+    discount_type = Column(String(20), default="none", nullable=False)
+    discount_value = Column(Numeric(12, 2), default=0.00, nullable=False)
+    intro_content = Column(Text, nullable=True)
+    
     brand_id = Column(Integer, ForeignKey("brands.id"), nullable=False)
     quote_type_id = Column(Integer, ForeignKey("quote_types.id"), nullable=False)
     template_id = Column(Integer, ForeignKey("templates.id"), nullable=False)
@@ -117,6 +122,12 @@ class QuoteLineItem(Base):
     total_price = Column(Numeric(12, 2), default=0.00, nullable=False)
     sort_order = Column(Integer, default=0, nullable=False)
     
+    # New fields for checklist, category and ordering
+    is_selected = Column(Boolean, default=True, nullable=False)
+    group_name = Column(String(100), nullable=True)
+    display_order = Column(Integer, default=0, nullable=False)
+    item_category = Column(String(50), nullable=True)
+    
     section = relationship("QuoteSection", back_populates="line_items")
 
 class Deliverable(Base):
@@ -127,6 +138,14 @@ class Deliverable(Base):
     type = Column(String(50), nullable=False) # e.g. photo, video, album, turnaround, other
     description = Column(Text, nullable=False)
     qty = Column(Integer, nullable=True)
+    
+    # New fields for checklist, category, pricing, complimentary, and ordering
+    is_selected = Column(Boolean, default=True, nullable=False)
+    price = Column(Numeric(12, 2), default=0.00, nullable=False)
+    is_complimentary = Column(Boolean, default=False, nullable=False)
+    group_name = Column(String(100), nullable=True)
+    display_order = Column(Integer, default=0, nullable=False)
+    item_category = Column(String(50), nullable=True)
     
     quote = relationship("Quote", back_populates="deliverables")
 

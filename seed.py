@@ -51,27 +51,52 @@ def seed_database():
         # 2. Seed Quote Types
         types = [
             QuoteType(
-                name="Wedding Quotation",
-                code="wedding",
-                fields_schema='{"fields": [{"name": "groom_name", "label": "Groom\'s Name", "type": "text", "required": true}, {"name": "bride_name", "label": "Bride\'s Name", "type": "text", "required": true}, {"name": "event_dates", "label": "Event Dates (e.g. 15th-16th Oct)", "type": "text", "required": true}, {"name": "venue", "label": "Venue(s)", "type": "text", "required": true}]}'
+                name="Wedding & Reception",
+                code="wedding_reception",
+                fields_schema='{"fields": [{"name": "groom_name", "label": "Groom\'s Name", "type": "text", "required": true}, {"name": "bride_name", "label": "Bride\'s Name", "type": "text", "required": true}, {"name": "event_dates", "label": "Event Dates", "type": "text", "required": true}, {"name": "venue", "label": "Venue(s)", "type": "text", "required": true}, {"name": "contact_number", "label": "Contact Number", "type": "text", "required": false}, {"name": "email", "label": "Email Address", "type": "text", "required": false}]}'
+            ),
+            QuoteType(
+                name="Reception Only",
+                code="reception_only",
+                fields_schema='{"fields": [{"name": "client_name", "label": "Bride/Groom or Client Name", "type": "text", "required": true}, {"name": "event_date", "label": "Event Date", "type": "text", "required": true}, {"name": "venue", "label": "Venue", "type": "text", "required": true}, {"name": "contact", "label": "Contact Info", "type": "text", "required": false}]}'
+            ),
+            QuoteType(
+                name="Marriage Only",
+                code="marriage_only",
+                fields_schema='{"fields": [{"name": "groom_name", "label": "Groom\'s Name", "type": "text", "required": true}, {"name": "bride_name", "label": "Bride\'s Name", "type": "text", "required": true}, {"name": "marriage_date", "label": "Marriage Date", "type": "text", "required": true}, {"name": "venue", "label": "Venue", "type": "text", "required": true}, {"name": "contact", "label": "Contact Info", "type": "text", "required": false}]}'
+            ),
+            QuoteType(
+                name="Muslim Wedding",
+                code="muslim_wedding",
+                fields_schema='{"fields": [{"name": "groom_name", "label": "Groom\'s Name", "type": "text", "required": true}, {"name": "bride_name", "label": "Bride\'s Name", "type": "text", "required": true}, {"name": "nikah_date", "label": "Nikah Date", "type": "text", "required": true}, {"name": "reception_date", "label": "Reception Date (Optional)", "type": "text", "required": false}, {"name": "venue", "label": "Venue", "type": "text", "required": true}, {"name": "contact", "label": "Contact Info", "type": "text", "required": false}]}'
             ),
             QuoteType(
                 name="Retirement Function",
                 code="retirement",
-                fields_schema='{"fields": [{"name": "client_name", "label": "Retiree Name", "type": "text", "required": true}, {"name": "event_date", "label": "Event Date", "type": "text", "required": true}, {"name": "venue", "label": "Venue", "type": "text", "required": true}]}'
+                fields_schema='{"fields": [{"name": "client_name", "label": "Retiree Name", "type": "text", "required": true}, {"name": "event_date", "label": "Event Date", "type": "text", "required": true}, {"name": "venue", "label": "Venue", "type": "text", "required": true}, {"name": "contact", "label": "Contact Info", "type": "text", "required": false}]}'
             ),
             QuoteType(
-                name="Convocation & Ad Shoot",
+                name="Convocation Ceremony & Ad Shoot",
                 code="convocation_ad",
-                fields_schema='{"fields": [{"name": "event_name", "label": "Event / Campaign Name", "type": "text", "required": true}, {"name": "event_date", "label": "Shoot Date(s)", "type": "text", "required": true}, {"name": "venue", "label": "Location / Venue", "type": "text", "required": true}]}'
+                fields_schema='{"fields": [{"name": "event_name", "label": "Event / Campaign Name", "type": "text", "required": true}, {"name": "event_date", "label": "Shoot Date(s)", "type": "text", "required": true}, {"name": "venue", "label": "Location / Venue", "type": "text", "required": true}, {"name": "contact", "label": "Contact Info", "type": "text", "required": false}]}'
             ),
             QuoteType(
                 name="Election Campaign",
                 code="election",
-                fields_schema='{"fields": [{"name": "campaign_name", "label": "Candidate / Campaign Name", "type": "text", "required": true}, {"name": "event_dates", "label": "Campaign Duration (Dates)", "type": "text", "required": true}, {"name": "venue", "label": "Constituency / Venue", "type": "text", "required": true}]}'
+                fields_schema='{"fields": [{"name": "campaign_name", "label": "Candidate / Campaign Name", "type": "text", "required": true}, {"name": "event_dates", "label": "Campaign Duration (Dates)", "type": "text", "required": true}, {"name": "venue", "label": "Constituency / Venue", "type": "text", "required": true}, {"name": "contact", "label": "Contact Info", "type": "text", "required": false}]}'
             ),
             QuoteType(
-                name="Custom Quotation",
+                name="Birthday",
+                code="birthday",
+                fields_schema='{"fields": [{"name": "celebrant_name", "label": "Celebrant Name", "type": "text", "required": true}, {"name": "age", "label": "Age (Optional)", "type": "text", "required": false}, {"name": "event_date", "label": "Event Date", "type": "text", "required": true}, {"name": "venue", "label": "Venue", "type": "text", "required": true}, {"name": "contact", "label": "Contact Info", "type": "text", "required": false}, {"name": "parent_name", "label": "Parent Name (Optional)", "type": "text", "required": false}]}'
+            ),
+            QuoteType(
+                name="Baby Shower",
+                code="baby_shower",
+                fields_schema='{"fields": [{"name": "mother_name", "label": "Mother\'s Name", "type": "text", "required": true}, {"name": "father_name", "label": "Father\'s Name (Optional)", "type": "text", "required": false}, {"name": "event_date", "label": "Event Date", "type": "text", "required": true}, {"name": "venue", "label": "Venue", "type": "text", "required": true}, {"name": "contact", "label": "Contact Info", "type": "text", "required": false}]}'
+            ),
+            QuoteType(
+                name="Custom",
                 code="custom",
                 fields_schema='{"fields": [{"name": "custom_details", "label": "Custom Quotation Description", "type": "textarea", "required": false}]}'
             )
@@ -81,13 +106,10 @@ def seed_database():
         db.flush()
         
         # 3. Seed Master Template placeholder
-        # The main HTML content is stored in the database. 
-        # When rendering, we can read this HTML and pass it to Jinja2 rendering.
-        # We will build an elegant, premium layout.
         template = Template(
             name="Rian Studioz Master Premium Layout",
             code="master_premium",
-            html_content="" # We will store this in Jinja2 template folder for code maintainability, and load it dynamically!
+            html_content=""
         )
         db.add(template)
         db.flush()
@@ -95,7 +117,7 @@ def seed_database():
         # 4. Seed Contacts
         contacts = [
             Contact(name="Anand & Divya", email="anand@example.com", phone="+91 99999 88888", address="Adyar, Chennai"),
-            Contact(name="Venkatesh Prasad", email="venkatesh@example.com", phone="+91 94444 33333", address="Mylapore, Chennai"),
+            Contact(name="Venkatesh Prasad", email="venkatesh@example.com", phone="+91 94444 33333", address="Vani Mahal, Chennai"),
             Contact(name="St. Joseph's College", email="admin@stjosephs.edu", phone="+91 98400 12345", address="Trichy, TN"),
             Contact(name="Dr. K. Sivaraman (Election)", email="candidate@election.in", phone="+91 90000 11111", address="Madurai constituency"),
             Contact(name="Rakesh Khanna", email="rakesh@khannaproductions.com", phone="+91 98200 98200", address="Juhu, Mumbai")
@@ -106,13 +128,16 @@ def seed_database():
 
         # 5. Create Sample Quotes
         
-        # 5.1 Wedding Quote
+        # 5.1 Wedding & Reception Quote
         q1 = Quote(
             quotation_number="RS-WD26-0255",
             quotation_date=date.today(),
             status="approved",
-            total_amount=Decimal("175000.00"),
+            total_amount=Decimal("165000.00"), # Subtotal: 175,000, Discount: 10,000 fixed
             notes="Exclusive wedding photography package including customized premium leather albums and drone services.",
+            discount_type="fixed",
+            discount_value=Decimal("10000.00"),
+            intro_content="Hey! A big hello from Rian Studioz. First of all, congratulations! We are as excited as you are for the Wedding & Reception Ceremony. Thank you for considering Rian Studioz for your big day. We guarantee to capture your best moments, which you will look back on with a smile in the future. We eagerly await to surprise you with amazing pictures and videos.",
             brand_id=brand.id,
             quote_type_id=types[0].id,
             template_id=template.id,
@@ -128,27 +153,32 @@ def seed_database():
         db.add(QuoteDetailsJson(quote_id=q1.id, field_key="venue", field_value="MRC Kalyana Mandapam, Santhome, Chennai"))
         
         # Sections & Items
-        s1 = QuoteSection(quote_id=q1.id, title="Pre-Wedding Shoot & Reception", sort_order=0)
-        s2 = QuoteSection(quote_id=q1.id, title="Muhurtham & Wedding Events", sort_order=1)
+        s1 = QuoteSection(quote_id=q1.id, title="Reception Coverage", sort_order=0)
+        s2 = QuoteSection(quote_id=q1.id, title="Wedding Coverage", sort_order=1)
         db.add(s1)
         db.add(s2)
         db.flush()
         
-        db.add(QuoteLineItem(section_id=s1.id, description="Outdoor Pre-Wedding shoot (half day, including costumes)", qty=Decimal("1"), unit_price=Decimal("35000.00"), total_price=Decimal("35000.00"), sort_order=0))
-        db.add(QuoteLineItem(section_id=s1.id, description="Candid Photography & Cinematic Video (Reception Coverage)", qty=Decimal("1"), unit_price=Decimal("45000.00"), total_price=Decimal("45000.00"), sort_order=1))
-        db.add(QuoteLineItem(section_id=s2.id, description="Wedding Muhurtham Coverage (Traditional Photo + Video + Candid)", qty=Decimal("1"), unit_price=Decimal("75000.00"), total_price=Decimal("75000.00"), sort_order=0))
-        db.add(QuoteLineItem(section_id=s2.id, description="Drone / Aerial Coverage (Muhurtham)", qty=Decimal("1"), unit_price=Decimal("20000.00"), total_price=Decimal("20000.00"), sort_order=1))
+        db.add(QuoteLineItem(section_id=s1.id, description="Candid Photography", qty=Decimal("1"), unit_price=Decimal("20000.00"), total_price=Decimal("20000.00"), sort_order=0, is_selected=True, group_name="Reception", display_order=0, item_category="photo"))
+        db.add(QuoteLineItem(section_id=s1.id, description="Traditional Photography", qty=Decimal("1"), unit_price=Decimal("10000.00"), total_price=Decimal("10000.00"), sort_order=1, is_selected=True, group_name="Reception", display_order=1, item_category="photo"))
+        db.add(QuoteLineItem(section_id=s1.id, description="Candid Videography (4K)", qty=Decimal("1"), unit_price=Decimal("20000.00"), total_price=Decimal("20000.00"), sort_order=2, is_selected=True, group_name="Reception", display_order=2, item_category="video"))
+        db.add(QuoteLineItem(section_id=s1.id, description="Traditional Videography (4K)", qty=Decimal("1"), unit_price=Decimal("15000.00"), total_price=Decimal("15000.00"), sort_order=3, is_selected=True, group_name="Reception", display_order=3, item_category="video"))
+        
+        db.add(QuoteLineItem(section_id=s2.id, description="Candid Photography", qty=Decimal("1"), unit_price=Decimal("20000.00"), total_price=Decimal("20000.00"), sort_order=0, is_selected=True, group_name="Wedding", display_order=0, item_category="photo"))
+        db.add(QuoteLineItem(section_id=s2.id, description="Traditional Photography", qty=Decimal("1"), unit_price=Decimal("10000.00"), total_price=Decimal("10000.00"), sort_order=1, is_selected=True, group_name="Wedding", display_order=1, item_category="photo"))
+        db.add(QuoteLineItem(section_id=s2.id, description="Candid Videography (4K)", qty=Decimal("1"), unit_price=Decimal("20000.00"), total_price=Decimal("20000.00"), sort_order=2, is_selected=True, group_name="Wedding", display_order=2, item_category="video"))
+        db.add(QuoteLineItem(section_id=s2.id, description="Traditional Videography (4K)", qty=Decimal("1"), unit_price=Decimal("15000.00"), total_price=Decimal("15000.00"), sort_order=3, is_selected=True, group_name="Wedding", display_order=3, item_category="video"))
         
         # Deliverables
-        db.add(Deliverable(quote_id=q1.id, type="photo", description="150 edited high-res photos for selection, 800+ raw photos shared via cloud link", qty=1))
-        db.add(Deliverable(quote_id=q1.id, type="video", description="4-minute Cinematic Teaser and 40-minute Wedding Highlights Video", qty=1))
-        db.add(Deliverable(quote_id=q1.id, type="album", description="12x15 Premium Flushmount Leather Bound Wedding Album (40 sheets / 80 pages)", qty=2))
-        db.add(Deliverable(quote_id=q1.id, type="turnaround", description="Teaser in 10 days, final deliverables in 45 days after selection", qty=1))
+        db.add(Deliverable(quote_id=q1.id, type="photo", description="All Candid & Traditional Photos (Raw Images)", qty=1, is_selected=True, price=Decimal("0.00"), is_complimentary=True, group_name="Photos", display_order=0))
+        db.add(Deliverable(quote_id=q1.id, type="album", description="2 Albums (250 Photos per Album, 40 Sheets / 80 Pages, Canvera Album with Mini Replica)", qty=2, is_selected=True, price=Decimal("0.00"), is_complimentary=True, group_name="Albums", display_order=1))
+        db.add(Deliverable(quote_id=q1.id, type="video", description="Full-Length Traditional Video", qty=1, is_selected=True, price=Decimal("0.00"), is_complimentary=True, group_name="Videos", display_order=2))
+        db.add(Deliverable(quote_id=q1.id, type="turnaround", description="Color Corrected Photos: Within 10 Days", qty=1, is_selected=True, price=Decimal("0.00"), is_complimentary=True, group_name="Delivery Timeline", display_order=3))
         
         # Payment Splits
-        db.add(PaymentSplit(quote_id=q1.id, stage_name="Advance Booking Fee (50%)", amount=Decimal("87500.00"), percentage=Decimal("50.00"), due_date="On Signing"))
-        db.add(PaymentSplit(quote_id=q1.id, stage_name="Event Date Milestone (40%)", amount=Decimal("70000.00"), percentage=Decimal("40.00"), due_date="12-Sep-2026"))
-        db.add(PaymentSplit(quote_id=q1.id, stage_name="Album Delivery Balance (10%)", amount=Decimal("17500.00"), percentage=Decimal("10.00"), due_date="On Album Handover"))
+        db.add(PaymentSplit(quote_id=q1.id, stage_name="Advance Booking Fee (50%)", amount=Decimal("82500.00"), percentage=Decimal("50.00"), due_date="On Signing"))
+        db.add(PaymentSplit(quote_id=q1.id, stage_name="Event Date Milestone (40%)", amount=Decimal("66000.00"), percentage=Decimal("40.00"), due_date="12-Sep-2026"))
+        db.add(PaymentSplit(quote_id=q1.id, stage_name="Album Delivery Balance (10%)", amount=Decimal("16500.00"), percentage=Decimal("10.00"), due_date="On Album Handover"))
 
         # Add-ons
         db.add(AddOn(quote_id=q1.id, description="Additional Candid photographer for Reception", price=Decimal("15000.00"), is_selected=False))
@@ -159,10 +189,13 @@ def seed_database():
             quotation_number="RS-RT26-0103",
             quotation_date=date.today(),
             status="sent",
-            total_amount=Decimal("48000.00"),
+            total_amount=Decimal("33000.00"),
             notes="Retirement celebration function photography package including traditional print and digital shareable gallery.",
+            discount_type="none",
+            discount_value=Decimal("0.00"),
+            intro_content="Hey! A big hello from Rian Studioz. First of all, congratulations! We are as excited as you are for the Retirement Function. Thank you for considering Rian Studioz for your big day. We guarantee to capture your best moments, which you will look back on with a smile in the future. We eagerly await to surprise you with amazing pictures and videos.",
             brand_id=brand.id,
-            quote_type_id=types[1].id,
+            quote_type_id=types[4].id,
             template_id=template.id,
             contact_id=contacts[1].id
         )
@@ -173,30 +206,32 @@ def seed_database():
         db.add(QuoteDetailsJson(quote_id=q2.id, field_key="event_date", field_value="October 28th, 2026"))
         db.add(QuoteDetailsJson(quote_id=q2.id, field_key="venue", field_value="Vani Mahal, T. Nagar, Chennai"))
         
-        s3 = QuoteSection(quote_id=q2.id, title="Retirement Ceremony", sort_order=0)
+        s3 = QuoteSection(quote_id=q2.id, title="Retirement Function", sort_order=0)
         db.add(s3)
         db.flush()
         
-        db.add(QuoteLineItem(section_id=s3.id, description="Traditional Photography + High-res Digital Copies", qty=Decimal("1"), unit_price=Decimal("18000.00"), total_price=Decimal("18000.00"), sort_order=0))
-        db.add(QuoteLineItem(section_id=s3.id, description="Candid Video Coverage & Short Tribute Video", qty=Decimal("1"), unit_price=Decimal("20000.00"), total_price=Decimal("20000.00"), sort_order=1))
-        db.add(QuoteLineItem(section_id=s3.id, description="Premium Photo Frame (A3 Size, Wooden border)", qty=Decimal("2"), unit_price=Decimal("5000.00"), total_price=Decimal("10000.00"), sort_order=2))
+        db.add(QuoteLineItem(section_id=s3.id, description="Traditional Photography", qty=Decimal("1"), unit_price=Decimal("10000.00"), total_price=Decimal("10000.00"), sort_order=0, is_selected=True, group_name="Retirement Function", display_order=0))
+        db.add(QuoteLineItem(section_id=s3.id, description="Candid Photography", qty=Decimal("1"), unit_price=Decimal("15000.00"), total_price=Decimal("15000.00"), sort_order=1, is_selected=True, group_name="Retirement Function", display_order=1))
+        db.add(QuoteLineItem(section_id=s3.id, description="Album (Magazine)", qty=Decimal("1"), unit_price=Decimal("8000.00"), total_price=Decimal("8000.00"), sort_order=2, is_selected=True, group_name="Retirement Function", display_order=2))
         
-        db.add(Deliverable(quote_id=q2.id, type="photo", description="300+ edited digital images delivered via high-speed gallery link", qty=1))
-        db.add(Deliverable(quote_id=q2.id, type="album", description="12x18 Magazine Style Layflat Hardcover Album (30 pages)", qty=1))
-        db.add(Deliverable(quote_id=q2.id, type="other", description="Complimentary digital invitation card (JPG/PDF format)", qty=1))
+        db.add(Deliverable(quote_id=q2.id, type="photo", description="All Candid & Traditional Photos (Raw Images)", qty=1, is_selected=True, price=Decimal("0.00"), is_complimentary=True, group_name="Photos", display_order=0))
+        db.add(Deliverable(quote_id=q2.id, type="album", description="1 Magazine Album (80-100 Photos, 20 Sheets / 40 Pages)", qty=1, is_selected=True, price=Decimal("0.00"), is_complimentary=True, group_name="Album", display_order=1))
         
-        db.add(PaymentSplit(quote_id=q2.id, stage_name="Advance Booking Fee (50%)", amount=Decimal("24000.00"), percentage=Decimal("50.00"), due_date="On Signing"))
-        db.add(PaymentSplit(quote_id=q2.id, stage_name="Event Day Payment (50%)", amount=Decimal("24000.00"), percentage=Decimal("50.00"), due_date="28-Oct-2026"))
+        db.add(PaymentSplit(quote_id=q2.id, stage_name="Advance Booking Fee (50%)", amount=Decimal("16500.00"), percentage=Decimal("50.00"), due_date="On Signing"))
+        db.add(PaymentSplit(quote_id=q2.id, stage_name="Event Day Payment (50%)", amount=Decimal("16500.00"), percentage=Decimal("50.00"), due_date="28-Oct-2026"))
 
         # 5.3 Convocation Quote
         q3 = Quote(
             quotation_number="RS-CA26-0166",
             quotation_date=date.today(),
             status="draft",
-            total_amount=Decimal("110000.00"),
+            total_amount=Decimal("115000.00"),
             notes="Shoot quotation for annual convocation plus promotional campaign video shoot.",
+            discount_type="none",
+            discount_value=Decimal("0.00"),
+            intro_content="Hey! A big hello from Rian Studioz. First of all, congratulations! We are as excited as you are for the Convocation Ceremony & Ad Shoot. Thank you for considering Rian Studioz for your big day. We guarantee to capture your best moments, which you will look back on with a smile in the future. We eagerly await to surprise you with amazing pictures and videos.",
             brand_id=brand.id,
-            quote_type_id=types[2].id,
+            quote_type_id=types[5].id,
             template_id=template.id,
             contact_id=contacts[2].id
         )
@@ -207,31 +242,39 @@ def seed_database():
         db.add(QuoteDetailsJson(quote_id=q3.id, field_key="event_date", field_value="August 10th - 11th, 2026"))
         db.add(QuoteDetailsJson(quote_id=q3.id, field_key="venue", field_value="College Auditorium & Campus Grounds, Trichy"))
         
-        s4 = QuoteSection(quote_id=q3.id, title="Convocation Event Coverage", sort_order=0)
-        s5 = QuoteSection(quote_id=q3.id, title="Promotional Video Shoot", sort_order=1)
+        s4 = QuoteSection(quote_id=q3.id, title="Ad Shoot", sort_order=0)
+        s5 = QuoteSection(quote_id=q3.id, title="Convocation", sort_order=1)
         db.add(s4)
         db.add(s5)
         db.flush()
         
-        db.add(QuoteLineItem(section_id=s4.id, description="Traditional Event Photography (2 photographers, 2 days)", qty=Decimal("1"), unit_price=Decimal("40000.00"), total_price=Decimal("40000.00"), sort_order=0))
-        db.add(QuoteLineItem(section_id=s4.id, description="Standard multi-camera video setup with raw outputs", qty=Decimal("1"), unit_price=Decimal("30000.00"), total_price=Decimal("30000.00"), sort_order=1))
-        db.add(QuoteLineItem(section_id=s5.id, description="Direction and Cinematography for Campus Walkthrough (1 day)", qty=Decimal("1"), unit_price=Decimal("40000.00"), total_price=Decimal("40000.00"), sort_order=0))
+        db.add(QuoteLineItem(section_id=s4.id, description="Candid Photography", qty=Decimal("2"), unit_price=Decimal("15000.00"), total_price=Decimal("30000.00"), sort_order=0, is_selected=True, group_name="Ad Shoot", display_order=0))
+        db.add(QuoteLineItem(section_id=s4.id, description="Candid Videography", qty=Decimal("2"), unit_price=Decimal("15000.00"), total_price=Decimal("30000.00"), sort_order=1, is_selected=True, group_name="Ad Shoot", display_order=1))
         
-        db.add(Deliverable(quote_id=q3.id, type="video", description="Full length Convocation recording (around 3 hours) and 3-minute Campus Promo Reel", qty=1))
-        db.add(Deliverable(quote_id=q3.id, type="photo", description="Selected stage photography and group class photos in digital layout", qty=1))
+        db.add(QuoteLineItem(section_id=s5.id, description="Candid Photography", qty=Decimal("1"), unit_price=Decimal("15000.00"), total_price=Decimal("15000.00"), sort_order=0, is_selected=True, group_name="Convocation", display_order=0))
+        db.add(QuoteLineItem(section_id=s5.id, description="Candid Videography", qty=Decimal("1"), unit_price=Decimal("15000.00"), total_price=Decimal("15000.00"), sort_order=1, is_selected=True, group_name="Convocation", display_order=1))
+        db.add(QuoteLineItem(section_id=s5.id, description="Traditional Photography", qty=Decimal("2"), unit_price=Decimal("10000.00"), total_price=Decimal("20000.00"), sort_order=2, is_selected=True, group_name="Convocation", display_order=2))
+        db.add(QuoteLineItem(section_id=s5.id, description="Traditional Videography", qty=Decimal("2"), unit_price=Decimal("15000.00"), total_price=Decimal("30000.00"), sort_order=3, is_selected=False, group_name="Convocation", display_order=3)) # UNSELECTED
+        db.add(QuoteLineItem(section_id=s5.id, description="Drone", qty=Decimal("1"), unit_price=Decimal("15000.00"), total_price=Decimal("15000.00"), sort_order=4, is_selected=True, group_name="Convocation", display_order=4))
         
-        db.add(PaymentSplit(quote_id=q3.id, stage_name="Retainer Payment (50%)", amount=Decimal("55000.00"), percentage=Decimal("50.00"), due_date="Upon PO confirmation"))
-        db.add(PaymentSplit(quote_id=q3.id, stage_name="Delivery Milestone (50%)", amount=Decimal("55000.00"), percentage=Decimal("50.00"), due_date="Upon video draft submission"))
+        db.add(Deliverable(quote_id=q3.id, type="photo", description="All Candid & Traditional Photos (Raw Images)", qty=1, is_selected=True, price=Decimal("0.00"), is_complimentary=True, group_name="Photos", display_order=0))
+        db.add(Deliverable(quote_id=q3.id, type="video", description="Full-Length Traditional Video", qty=1, is_selected=True, price=Decimal("0.00"), is_complimentary=True, group_name="Videos", display_order=1))
+        
+        db.add(PaymentSplit(quote_id=q3.id, stage_name="Retainer Payment (50%)", amount=Decimal("57500.00"), percentage=Decimal("50.00"), due_date="Upon PO confirmation"))
+        db.add(PaymentSplit(quote_id=q3.id, stage_name="Delivery Milestone (50%)", amount=Decimal("57500.00"), percentage=Decimal("50.00"), due_date="Upon video draft submission"))
 
         # 5.4 Election Campaign Quote
         q4 = Quote(
             quotation_number="RS-EL26-0089",
             quotation_date=date.today(),
             status="draft",
-            total_amount=Decimal("320000.00"),
+            total_amount=Decimal("360000.00"),
             notes="Election campaign digital visual package. Continuous photo/video coverage for constituency visits.",
+            discount_type="none",
+            discount_value=Decimal("0.00"),
+            intro_content="Hey! A big hello from Rian Studioz. First of all, congratulations! We are as excited as you are for the Election Campaign. Thank you for considering Rian Studioz for your big day. We guarantee to capture your best moments, which you will look back on with a smile in the future. We eagerly await to surprise you with amazing pictures and videos.",
             brand_id=brand.id,
-            quote_type_id=types[3].id,
+            quote_type_id=types[6].id,
             template_id=template.id,
             contact_id=contacts[3].id
         )
@@ -242,20 +285,20 @@ def seed_database():
         db.add(QuoteDetailsJson(quote_id=q4.id, field_key="event_dates", field_value="10 Days Campaign (1st - 10th November 2026)"))
         db.add(QuoteDetailsJson(quote_id=q4.id, field_key="venue", field_value="Madurai City & Rural Constituencies"))
         
-        s6 = QuoteSection(quote_id=q4.id, title="Outreach Video Production", sort_order=0)
+        s6 = QuoteSection(quote_id=q4.id, title="Election Campaign", sort_order=0)
         db.add(s6)
         db.flush()
         
-        db.add(QuoteLineItem(section_id=s6.id, description="Dedicated Cameraman + Editor on site for 10 days", qty=Decimal("10"), unit_price=Decimal("25000.00"), total_price=Decimal("250000.00"), sort_order=0))
-        db.add(QuoteLineItem(section_id=s6.id, description="Drone aerial coverage (Constituency rallies - 5 key locations)", qty=Decimal("5"), unit_price=Decimal("10000.00"), total_price=Decimal("50000.00"), sort_order=1))
-        db.add(QuoteLineItem(section_id=s6.id, description="Social media format editing (Instagram reels / WhatsApp clips)", qty=Decimal("1"), unit_price=Decimal("20000.00"), total_price=Decimal("20000.00"), sort_order=2))
+        db.add(QuoteLineItem(section_id=s6.id, description="Traditional Photography", qty=Decimal("10"), unit_price=Decimal("12000.00"), total_price=Decimal("120000.00"), sort_order=0, is_selected=True, group_name="Election Campaign", display_order=0))
+        db.add(QuoteLineItem(section_id=s6.id, description="Traditional Videography", qty=Decimal("10"), unit_price=Decimal("12000.00"), total_price=Decimal("120000.00"), sort_order=1, is_selected=True, group_name="Election Campaign", display_order=1))
+        db.add(QuoteLineItem(section_id=s6.id, description="Drone", qty=Decimal("10"), unit_price=Decimal("12000.00"), total_price=Decimal("120000.00"), sort_order=2, is_selected=True, group_name="Election Campaign", display_order=2))
         
-        db.add(Deliverable(quote_id=q4.id, type="video", description="Daily reels (2 per day), 1 consolidated campaign highlights film (8 minutes)", qty=1))
-        db.add(Deliverable(quote_id=q4.id, type="photo", description="Unlimited rally and candidate portfolio photos edited daily", qty=1))
+        db.add(Deliverable(quote_id=q4.id, type="photo", description="All Traditional Photos (Raw Images)", qty=1, is_selected=True, price=Decimal("0.00"), is_complimentary=True, group_name="Photos", display_order=0))
+        db.add(Deliverable(quote_id=q4.id, type="video", description="Full-Length Traditional Video", qty=1, is_selected=True, price=Decimal("0.00"), is_complimentary=True, group_name="Videos", display_order=1))
         
-        db.add(PaymentSplit(quote_id=q4.id, stage_name="Advance Retainer (40%)", amount=Decimal("128000.00"), percentage=Decimal("40.00"), due_date="Before Campaign"))
-        db.add(PaymentSplit(quote_id=q4.id, stage_name="Mid-Campaign Milestone (40%)", amount=Decimal("128000.00"), percentage=Decimal("40.00"), due_date="Day 5 of Campaign"))
-        db.add(PaymentSplit(quote_id=q4.id, stage_name="Final Settlement (20%)", amount=Decimal("64000.00"), percentage=Decimal("20.00"), due_date="Within 3 days of Campaign wrap"))
+        db.add(PaymentSplit(quote_id=q4.id, stage_name="Advance Retainer (40%)", amount=Decimal("144000.00"), percentage=Decimal("40.00"), due_date="Before Campaign"))
+        db.add(PaymentSplit(quote_id=q4.id, stage_name="Mid-Campaign Milestone (40%)", amount=Decimal("144000.00"), percentage=Decimal("40.00"), due_date="Day 5 of Campaign"))
+        db.add(PaymentSplit(quote_id=q4.id, stage_name="Final Settlement (20%)", amount=Decimal("72000.00"), percentage=Decimal("20.00"), due_date="Within 3 days of Campaign wrap"))
 
         # 5.5 Custom Quote
         q5 = Quote(
@@ -264,8 +307,11 @@ def seed_database():
             status="draft",
             total_amount=Decimal("95000.00"),
             notes="Custom creative media coverage for high-end boutique brand launch.",
+            discount_type="none",
+            discount_value=Decimal("0.00"),
+            intro_content="Hey! A big hello from Rian Studioz. First of all, congratulations! We are as excited as you are for the event. Thank you for considering Rian Studioz for your big day. We guarantee to capture your best moments, which you will look back on with a smile in the future. We eagerly await to surprise you with amazing pictures and videos.",
             brand_id=brand.id,
-            quote_type_id=types[4].id,
+            quote_type_id=types[9].id,
             template_id=template.id,
             contact_id=contacts[4].id
         )
@@ -278,16 +324,14 @@ def seed_database():
         db.add(s7)
         db.flush()
         
-        db.add(QuoteLineItem(section_id=s7.id, description="Fashion Creative Photographer + Studio lights setup", qty=Decimal("1"), unit_price=Decimal("45000.00"), total_price=Decimal("45000.00"), sort_order=0))
-        db.add(QuoteLineItem(section_id=s7.id, description="Instagram Highlights Cinematic Editing (1 Reel + 1 Short teaser)", qty=Decimal("1"), unit_price=Decimal("35000.00"), total_price=Decimal("35000.00"), sort_order=1))
-        db.add(QuoteLineItem(section_id=s7.id, description="Model portfolio photoshoot editing fee", qty=Decimal("1"), unit_price=Decimal("15000.00"), total_price=Decimal("15000.00"), sort_order=2))
+        db.add(QuoteLineItem(section_id=s7.id, description="Fashion Creative Photographer + Studio lights setup", qty=Decimal("1"), unit_price=Decimal("45000.00"), total_price=Decimal("45000.00"), sort_order=0, is_selected=True, group_name="Boutique Creative Launch", display_order=0))
+        db.add(QuoteLineItem(section_id=s7.id, description="Instagram Highlights Cinematic Editing (1 Reel + 1 Short teaser)", qty=Decimal("1"), unit_price=Decimal("35000.00"), total_price=Decimal("35000.00"), sort_order=1, is_selected=True, group_name="Boutique Creative Launch", display_order=1))
+        db.add(QuoteLineItem(section_id=s7.id, description="Model portfolio photoshoot editing fee", qty=Decimal("1"), unit_price=Decimal("15000.00"), total_price=Decimal("15000.00"), sort_order=2, is_selected=True, group_name="Boutique Creative Launch", display_order=2))
         
-        db.add(Deliverable(quote_id=q5.id, type="photo", description="50 retouched high-fashion boutique photos, 20 model lookbook cuts", qty=1))
-        db.add(Deliverable(quote_id=q5.id, type="video", description="1 Brand launch cinematic video (90 seconds, vertical and landscape formats)", qty=1))
+        db.add(Deliverable(quote_id=q5.id, type="photo", description="50 retouched high-fashion boutique photos, 20 model lookbook cuts", qty=1, is_selected=True, price=Decimal("0.00"), is_complimentary=True, group_name="Photos", display_order=0))
+        db.add(Deliverable(quote_id=q5.id, type="video", description="1 Brand launch cinematic video (90 seconds, vertical and landscape formats)", qty=1, is_selected=True, price=Decimal("0.00"), is_complimentary=True, group_name="Videos", display_order=1))
         
         db.add(PaymentSplit(quote_id=q5.id, stage_name="Booking Deposit (50%)", amount=Decimal("47500.00"), percentage=Decimal("50.00"), due_date="On Booking"))
-        db.add(PaymentSplit(quote_id=q5.id, stage_name="Post-Shoot Submission (50%)", amount=Decimal("47500.00"), percentage=Decimal("50.00"), due_date="On Deliverables Draft"))
-
         db.commit()
         print("Database seeded successfully!")
     except Exception as e:

@@ -69,15 +69,30 @@ def create_quote(db: Session, obj_in: QuoteCreate) -> Quote:
         db.flush() # gets contact.id
 
     # 3. Calculate Total Amount
-    # Sum up all line items in all sections + active add-ons
-    total = 0
+    # Sum up selected line items in sections + active add-ons + selected non-complimentary deliverables
+    total = 0.0
     for section in obj_in.sections:
         for item in section.line_items:
-            total += float(item.qty) * float(item.unit_price)
+            if item.is_selected:
+                total += float(item.qty) * float(item.unit_price)
             
     for addon in obj_in.add_ons:
         if addon.is_selected:
             total += float(addon.price)
+
+    for deliverable in obj_in.deliverables:
+        if deliverable.is_selected and not deliverable.is_complimentary:
+            total += float(deliverable.qty or 1) * float(deliverable.price or 0.0)
+
+    # Apply Discount
+    discount_amount = 0.0
+    discount_val = float(obj_in.discount_value)
+    if obj_in.discount_type == "fixed":
+        discount_amount = discount_val
+    elif obj_in.discount_type == "percentage":
+        discount_amount = total * (discount_val / 100.0)
+        
+    total = max(0.0, total - discount_amount)
 
     # 4. Create main quote object
     db_quote = Quote(
@@ -86,6 +101,9 @@ def create_quote(db: Session, obj_in: QuoteCreate) -> Quote:
         status=obj_in.status,
         total_amount=total,
         notes=obj_in.notes,
+        discount_type=obj_in.discount_type,
+        discount_value=obj_in.discount_value,
+        intro_content=obj_in.intro_content,
         brand_id=brand.id,
         quote_type_id=quote_type.id,
         template_id=template.id,
@@ -121,7 +139,11 @@ def create_quote(db: Session, obj_in: QuoteCreate) -> Quote:
                 qty=item.qty,
                 unit_price=item.unit_price,
                 total_price=line_total,
-                sort_order=i_idx
+                sort_order=i_idx,
+                is_selected=item.is_selected,
+                group_name=item.group_name,
+                display_order=item.display_order,
+                item_category=item.item_category
             )
             db.add(db_item)
 
@@ -131,7 +153,13 @@ def create_quote(db: Session, obj_in: QuoteCreate) -> Quote:
             quote_id=db_quote.id,
             type=deliverable.type,
             description=deliverable.description,
-            qty=deliverable.qty
+            qty=deliverable.qty,
+            is_selected=deliverable.is_selected,
+            price=deliverable.price,
+            is_complimentary=deliverable.is_complimentary,
+            group_name=deliverable.group_name,
+            display_order=deliverable.display_order,
+            item_category=deliverable.item_category
         )
         db.add(db_deliv)
 
@@ -183,15 +211,34 @@ def update_quote(db: Session, quote_id: int, obj_in: QuoteCreate) -> Quote:
     total = 0.0
     for section in obj_in.sections:
         for item in section.line_items:
-            total += float(item.qty) * float(item.unit_price)
+            if item.is_selected:
+                total += float(item.qty) * float(item.unit_price)
             
     for addon in obj_in.add_ons:
         if addon.is_selected:
             total += float(addon.price)
+
+    for deliverable in obj_in.deliverables:
+        if deliverable.is_selected and not deliverable.is_complimentary:
+            total += float(deliverable.qty or 1) * float(deliverable.price or 0.0)
+
+    # Apply Discount
+    discount_amount = 0.0
+    discount_val = float(obj_in.discount_value)
+    if obj_in.discount_type == "fixed":
+        discount_amount = discount_val
+    elif obj_in.discount_type == "percentage":
+        discount_amount = total * (discount_val / 100.0)
+        
+    total = max(0.0, total - discount_amount)
+    
     db_quote.total_amount = total
+    db_quote.discount_type = obj_in.discount_type
+    db_quote.discount_value = obj_in.discount_value
+    db_quote.intro_content = obj_in.intro_content
 
     # 3. Clean and delete previous child relationships (Cascaded via ORM delete-orphan)
-    # SQLAlchemy deletes them from DB on commit since we overwrite or clear collections
+    # db_quote.details, db_quote.sections, etc. clear
     db_quote.details.clear()
     db_quote.sections.clear()
     db_quote.deliverables.clear()
@@ -227,7 +274,11 @@ def update_quote(db: Session, quote_id: int, obj_in: QuoteCreate) -> Quote:
                 qty=item.qty,
                 unit_price=item.unit_price,
                 total_price=line_total,
-                sort_order=i_idx
+                sort_order=i_idx,
+                is_selected=item.is_selected,
+                group_name=item.group_name,
+                display_order=item.display_order,
+                item_category=item.item_category
             )
             db.add(db_item)
 
@@ -237,7 +288,13 @@ def update_quote(db: Session, quote_id: int, obj_in: QuoteCreate) -> Quote:
             quote_id=db_quote.id,
             type=deliverable.type,
             description=deliverable.description,
-            qty=deliverable.qty
+            qty=deliverable.qty,
+            is_selected=deliverable.is_selected,
+            price=deliverable.price,
+            is_complimentary=deliverable.is_complimentary,
+            group_name=deliverable.group_name,
+            display_order=deliverable.display_order,
+            item_category=deliverable.item_category
         )
         db.add(db_deliv)
 
@@ -281,6 +338,9 @@ def duplicate_quote(db: Session, quote_id: int) -> Quote:
         status="draft",
         total_amount=original.total_amount,
         notes=original.notes,
+        discount_type=original.discount_type,
+        discount_value=original.discount_value,
+        intro_content=original.intro_content,
         brand_id=original.brand_id,
         quote_type_id=original.quote_type_id,
         template_id=original.template_id,
@@ -315,7 +375,11 @@ def duplicate_quote(db: Session, quote_id: int) -> Quote:
                 qty=item.qty,
                 unit_price=item.unit_price,
                 total_price=item.total_price,
-                sort_order=item.sort_order
+                sort_order=item.sort_order,
+                is_selected=item.is_selected,
+                group_name=item.group_name,
+                display_order=item.display_order,
+                item_category=item.item_category
             )
             db.add(new_item)
 
@@ -325,7 +389,13 @@ def duplicate_quote(db: Session, quote_id: int) -> Quote:
             quote_id=duplicated.id,
             type=deliv.type,
             description=deliv.description,
-            qty=deliv.qty
+            qty=deliv.qty,
+            is_selected=deliv.is_selected,
+            price=deliv.price,
+            is_complimentary=deliv.is_complimentary,
+            group_name=deliv.group_name,
+            display_order=deliv.display_order,
+            item_category=deliv.item_category
         )
         db.add(new_deliv)
 

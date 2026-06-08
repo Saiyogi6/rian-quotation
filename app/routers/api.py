@@ -35,7 +35,11 @@ def to_quote_response(db_quote: Quote) -> QuoteResponse:
                     description=item.description,
                     qty=item.qty,
                     unit_price=item.unit_price,
-                    total_price=item.total_price
+                    total_price=item.total_price,
+                    is_selected=item.is_selected,
+                    group_name=item.group_name,
+                    display_order=item.display_order,
+                    item_category=item.item_category
                 )
             )
         sections_response.append(
@@ -55,12 +59,28 @@ def to_quote_response(db_quote: Quote) -> QuoteResponse:
         total_amount=db_quote.total_amount,
         pdf_path=db_quote.pdf_path,
         notes=db_quote.notes,
+        discount_type=db_quote.discount_type,
+        discount_value=db_quote.discount_value,
+        intro_content=db_quote.intro_content,
         brand=BrandResponse.model_validate(db_quote.brand),
         quote_type=QuoteTypeResponse.model_validate(db_quote.quote_type),
         contact=ContactResponse.model_validate(db_quote.contact),
         details=details_dict,
         sections=sections_response,
-        deliverables=[DeliverableResponse.model_validate(d) for d in db_quote.deliverables],
+        deliverables=[
+            DeliverableResponse(
+                id=d.id,
+                type=d.type,
+                description=d.description,
+                qty=d.qty,
+                is_selected=d.is_selected,
+                price=d.price,
+                is_complimentary=d.is_complimentary,
+                group_name=d.group_name,
+                display_order=d.display_order,
+                item_category=d.item_category
+            ) for d in db_quote.deliverables
+        ],
         payment_splits=[PaymentSplitResponse.model_validate(p) for p in db_quote.payment_splits],
         add_ons=[AddOnResponse.model_validate(a) for a in db_quote.add_ons],
         created_at=db_quote.created_at,

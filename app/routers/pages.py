@@ -142,14 +142,79 @@ def preview_quote(request: Request, quote_id: int, db: Session = Depends(get_db)
         
     details_dict = quote_service.build_quote_details_dict(db_quote)
     
-    # Format monetary values
+    import json
+    fields_config = []
+    if db_quote.quote_type and db_quote.quote_type.fields_schema:
+        try:
+            schema_data = json.loads(db_quote.quote_type.fields_schema)
+            fields_config = schema_data.get("fields", [])
+        except Exception:
+            pass
+            
+    # Calculate sorted components
+    sorted_sections = []
+    selected_packages_total = 0.0
+    for section in db_quote.sections:
+        selected_items = [item for item in section.line_items if item.is_selected]
+        selected_items.sort(key=lambda x: (x.display_order, x.sort_order or 0))
+        for item in selected_items:
+            selected_packages_total += float(item.qty) * float(item.unit_price)
+        if selected_items:
+            sorted_sections.append({
+                "title": section.title,
+                "line_items": selected_items
+            })
+            
+    # Filter and sort deliverables
+    selected_deliverables = [d for d in db_quote.deliverables if d.is_selected]
+    selected_paid_deliverables_total = 0.0
+    grouped_deliverables = {}
+    for d in selected_deliverables:
+        if not d.is_complimentary:
+            selected_paid_deliverables_total += float(d.qty or 1) * float(d.price or 0.0)
+        g_name = d.group_name or d.type.capitalize()
+        if g_name not in grouped_deliverables:
+            grouped_deliverables[g_name] = []
+        grouped_deliverables[g_name].append(d)
+        
+    for g_name in grouped_deliverables:
+        grouped_deliverables[g_name].sort(key=lambda x: (x.display_order, x.id or 0))
+        
+    sorted_groups = sorted(grouped_deliverables.keys())
+    sorted_deliverables = [{"group_name": g, "items": grouped_deliverables[g]} for g in sorted_groups]
+    
+    # Subtotal
+    subtotal = selected_packages_total + selected_paid_deliverables_total
+    
+    # Addons
+    active_addons = [add for add in db_quote.add_ons if add.is_selected]
+    addons_total = sum(float(add.price) for add in active_addons)
+    
+    # Total before discount
+    total_before_discount = subtotal + addons_total
+    
+    # Discount
+    discount_amount = 0.0
+    discount_val = float(db_quote.discount_value)
+    if db_quote.discount_type == "fixed":
+        discount_amount = discount_val
+    elif db_quote.discount_type == "percentage":
+        discount_amount = total_before_discount * (discount_val / 100.0)
+        
     total_formatted = f"{db_quote.total_amount:,.2f}"
     
     return templates.TemplateResponse(request=request, name="quote_preview.html", context={
         "quote": db_quote,
         "details": details_dict,
+        "fields_config": fields_config,
         "total_formatted": total_formatted,
-        "is_pdf": False
+        "is_pdf": False,
+        "sorted_sections": sorted_sections,
+        "sorted_deliverables": sorted_deliverables,
+        "subtotal": subtotal,
+        "active_addons": active_addons,
+        "addons_total": addons_total,
+        "discount_amount": discount_amount
     })
 
 @router.get("/settings", response_class=HTMLResponse)
@@ -166,13 +231,58 @@ def get_settings_page(request: Request, db: Session = Depends(get_db)):
 # Helper function to render a quote to HTML string (used by PDF exporter)
 def render_quote_to_html(quote: Quote, db: Session) -> str:
     details_dict = quote_service.build_quote_details_dict(quote)
-    total_formatted = f"{quote.total_amount:,.2f}"
     
-    # Resolve image path to absolute local path or serve file URL for WeasyPrint
-    # WeasyPrint runs locally, so referencing relative static paths like "/static/images/logo.png"
-    # might not resolve unless base_url is set or we pass absolute paths.
-    # In weasyprint base_url is set to ".", which means relative paths like "./app/static/images/logo.png" will work.
-    # We will adjust the logo path inside the template depending on is_pdf.
+    # Calculate sorted components
+    sorted_sections = []
+    selected_packages_total = 0.0
+    for section in quote.sections:
+        selected_items = [item for item in section.line_items if item.is_selected]
+        selected_items.sort(key=lambda x: (x.display_order, x.sort_order or 0))
+        for item in selected_items:
+            selected_packages_total += float(item.qty) * float(item.unit_price)
+        if selected_items:
+            sorted_sections.append({
+                "title": section.title,
+                "line_items": selected_items
+            })
+            
+    # Filter and sort deliverables
+    selected_deliverables = [d for d in quote.deliverables if d.is_selected]
+    selected_paid_deliverables_total = 0.0
+    grouped_deliverables = {}
+    for d in selected_deliverables:
+        if not d.is_complimentary:
+            selected_paid_deliverables_total += float(d.qty or 1) * float(d.price or 0.0)
+        g_name = d.group_name or d.type.capitalize()
+        if g_name not in grouped_deliverables:
+            grouped_deliverables[g_name] = []
+        grouped_deliverables[g_name].append(d)
+        
+    for g_name in grouped_deliverables:
+        grouped_deliverables[g_name].sort(key=lambda x: (x.display_order, x.id or 0))
+        
+    sorted_groups = sorted(grouped_deliverables.keys())
+    sorted_deliverables = [{"group_name": g, "items": grouped_deliverables[g]} for g in sorted_groups]
+    
+    # Subtotal
+    subtotal = selected_packages_total + selected_paid_deliverables_total
+    
+    # Addons
+    active_addons = [add for add in quote.add_ons if add.is_selected]
+    addons_total = sum(float(add.price) for add in active_addons)
+    
+    # Total before discount
+    total_before_discount = subtotal + addons_total
+    
+    # Discount
+    discount_amount = 0.0
+    discount_val = float(quote.discount_value)
+    if quote.discount_type == "fixed":
+        discount_amount = discount_val
+    elif quote.discount_type == "percentage":
+        discount_amount = total_before_discount * (discount_val / 100.0)
+        
+    total_formatted = f"{quote.total_amount:,.2f}"
     
     # We render the template directly from jinja
     template_obj = templates.get_template("quote_preview.html")
@@ -181,6 +291,12 @@ def render_quote_to_html(quote: Quote, db: Session) -> str:
         "quote": quote,
         "details": details_dict,
         "total_formatted": total_formatted,
-        "is_pdf": True
+        "is_pdf": True,
+        "sorted_sections": sorted_sections,
+        "sorted_deliverables": sorted_deliverables,
+        "subtotal": subtotal,
+        "active_addons": active_addons,
+        "addons_total": addons_total,
+        "discount_amount": discount_amount
     })
     return html_str

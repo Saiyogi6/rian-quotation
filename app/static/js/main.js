@@ -3,6 +3,205 @@
 // Handles dynamic form logic, calculations, repeating fields, and submissions
 // ==========================================================================
 
+const PRESETS_DATA = {
+    wedding_reception: {
+        intro: "Hey! A big hello from Rian Studioz. First of all, congratulations! We are as excited as you are for the Wedding & Reception Ceremony. Thank you for considering Rian Studioz for your big day. We guarantee to capture your best moments, which you will look back on with a smile in the future. We eagerly await to surprise you with amazing pictures and videos.",
+        sections: [
+            {
+                title: "Reception Coverage",
+                items: [
+                    { description: "Candid Photography", qty: 1, unit_price: 20000, is_selected: true, group_name: "Reception", display_order: 0, item_category: "photo" },
+                    { description: "Traditional Photography", qty: 1, unit_price: 10000, is_selected: true, group_name: "Reception", display_order: 1, item_category: "photo" },
+                    { description: "Candid Videography (4K)", qty: 1, unit_price: 20000, is_selected: true, group_name: "Reception", display_order: 2, item_category: "video" },
+                    { description: "Traditional Videography (4K)", qty: 1, unit_price: 15000, is_selected: true, group_name: "Reception", display_order: 3, item_category: "video" }
+                ]
+            },
+            {
+                title: "Wedding Coverage",
+                items: [
+                    { description: "Candid Photography", qty: 1, unit_price: 20000, is_selected: true, group_name: "Wedding", display_order: 0, item_category: "photo" },
+                    { description: "Traditional Photography", qty: 1, unit_price: 10000, is_selected: true, group_name: "Wedding", display_order: 1, item_category: "photo" },
+                    { description: "Candid Videography (4K)", qty: 1, unit_price: 20000, is_selected: true, group_name: "Wedding", display_order: 2, item_category: "video" },
+                    { description: "Traditional Videography (4K)", qty: 1, unit_price: 15000, is_selected: true, group_name: "Wedding", display_order: 3, item_category: "video" }
+                ]
+            }
+        ],
+        deliverables: [
+            { type: "photo", description: "All Candid & Traditional Photos (Raw Images)", qty: 1, price: 0, is_complimentary: true, group_name: "Photos", display_order: 0 },
+            { type: "album", description: "2 Albums (250 Photos per Album, 40 Sheets / 80 Pages, Canvera Album with Mini Replica)", qty: 2, price: 0, is_complimentary: true, group_name: "Albums", display_order: 1 },
+            { type: "video", description: "Full-Length Traditional Video", qty: 1, price: 0, is_complimentary: true, group_name: "Videos", display_order: 2 },
+            { type: "turnaround", description: "Color Corrected Photos: Within 10 Days", qty: 1, price: 0, is_complimentary: true, group_name: "Delivery Timeline", display_order: 3 }
+        ]
+    },
+    reception_only: {
+        intro: "Hey! A big hello from Rian Studioz. First of all, congratulations! We are as excited as you are for the Reception. Thank you for considering Rian Studioz for your big day. We guarantee to capture your best moments, which you will look back on with a smile in the future.",
+        sections: [
+            {
+                title: "Reception Coverage",
+                items: [
+                    { description: "Candid Photography", qty: 1, unit_price: 20000, is_selected: true, group_name: "Reception", display_order: 0, item_category: "photo" },
+                    { description: "Traditional Photography", qty: 1, unit_price: 10000, is_selected: true, group_name: "Reception", display_order: 1, item_category: "photo" },
+                    { description: "Candid Videography (4K)", qty: 1, unit_price: 20000, is_selected: true, group_name: "Reception", display_order: 2, item_category: "video" },
+                    { description: "Traditional Videography (4K)", qty: 1, unit_price: 15000, is_selected: true, group_name: "Reception", display_order: 3, item_category: "video" }
+                ]
+            }
+        ],
+        deliverables: [
+            { type: "photo", description: "Digital Photo Gallery (Raw & Edits)", qty: 1, price: 0, is_complimentary: true, group_name: "Photos", display_order: 0 },
+            { type: "album", description: "1 Premium Photobook Album", qty: 1, price: 0, is_complimentary: true, group_name: "Albums", display_order: 1 }
+        ]
+    },
+    marriage_only: {
+        intro: "Hey! A big hello from Rian Studioz. First of all, congratulations! We are as excited as you are for the Marriage Ceremony. Thank you for considering Rian Studioz for your big day.",
+        sections: [
+            {
+                title: "Marriage Coverage",
+                items: [
+                    { description: "Candid Photography", qty: 1, unit_price: 20000, is_selected: true, group_name: "Marriage Only", display_order: 0, item_category: "photo" },
+                    { description: "Traditional Photography", qty: 1, unit_price: 10000, is_selected: true, group_name: "Marriage Only", display_order: 1, item_category: "photo" },
+                    { description: "Traditional Videography (4K)", qty: 1, unit_price: 15000, is_selected: true, group_name: "Marriage Only", display_order: 2, item_category: "video" }
+                ]
+            }
+        ],
+        deliverables: [
+            { type: "photo", description: "High-res Photo Delivery (Digital)", qty: 1, price: 0, is_complimentary: true, group_name: "Photos", display_order: 0 },
+            { type: "album", description: "1 Standard Wedding Album", qty: 1, price: 0, is_complimentary: true, group_name: "Albums", display_order: 1 }
+        ]
+    },
+    muslim_wedding: {
+        intro: "Hey! A big hello from Rian Studioz. First of all, congratulations! We are as excited as you are for the Nikah & Reception. Thank you for considering Rian Studioz for your big day.",
+        sections: [
+            {
+                title: "Nikah Ceremony",
+                items: [
+                    { description: "Candid Photography", qty: 1, unit_price: 20000, is_selected: true, group_name: "Nikah", display_order: 0, item_category: "photo" },
+                    { description: "Traditional Photography", qty: 1, unit_price: 10000, is_selected: true, group_name: "Nikah", display_order: 1, item_category: "photo" },
+                    { description: "Traditional Videography (4K)", qty: 1, unit_price: 15000, is_selected: true, group_name: "Nikah", display_order: 2, item_category: "video" }
+                ]
+            },
+            {
+                title: "Reception Coverage",
+                items: [
+                    { description: "Candid Photography", qty: 1, unit_price: 20000, is_selected: true, group_name: "Reception", display_order: 0, item_category: "photo" },
+                    { description: "Candid Videography", qty: 1, unit_price: 20000, is_selected: true, group_name: "Reception", display_order: 1, item_category: "video" }
+                ]
+            }
+        ],
+        deliverables: [
+            { type: "photo", description: "All RAW + Edited Photos", qty: 1, price: 0, is_complimentary: true, group_name: "Photos", display_order: 0 },
+            { type: "album", description: "2 Premium Wedding Albums", qty: 2, price: 0, is_complimentary: true, group_name: "Albums", display_order: 1 }
+        ]
+    },
+    retirement: {
+        intro: "Hey! A big hello from Rian Studioz. First of all, congratulations! We are as excited as you are for the Retirement Function. Thank you for considering Rian Studioz for your big day.",
+        sections: [
+            {
+                title: "Retirement Coverage",
+                items: [
+                    { description: "Traditional Photography", qty: 1, unit_price: 10000, is_selected: true, group_name: "Retirement", display_order: 0, item_category: "photo" },
+                    { description: "Candid Photography", qty: 1, unit_price: 15000, is_selected: true, group_name: "Retirement", display_order: 1, item_category: "photo" },
+                    { description: "Album (Magazine)", qty: 1, unit_price: 8000, is_selected: true, group_name: "Retirement", display_order: 2, item_category: "album" }
+                ]
+            }
+        ],
+        deliverables: [
+            { type: "photo", description: "All Candid & Traditional Photos (Raw Images)", qty: 1, price: 0, is_complimentary: true, group_name: "Photos", display_order: 0 },
+            { type: "album", description: "1 Magazine Album (20 Sheets / 40 Pages)", qty: 1, price: 0, is_complimentary: true, group_name: "Album", display_order: 1 }
+        ]
+    },
+    convocation_ad: {
+        intro: "Hey! A big hello from Rian Studioz. First of all, congratulations! We are as excited as you are for the Convocation Ceremony & Ad Shoot. Thank you for considering Rian Studioz for your event.",
+        sections: [
+            {
+                title: "Ad Shoot",
+                items: [
+                    { description: "Candid Photography", qty: 2, unit_price: 15000, is_selected: true, group_name: "Ad Shoot", display_order: 0, item_category: "photo" },
+                    { description: "Candid Videography", qty: 2, unit_price: 15000, is_selected: true, group_name: "Ad Shoot", display_order: 1, item_category: "video" }
+                ]
+            },
+            {
+                title: "Convocation",
+                items: [
+                    { description: "Candid Photography", qty: 1, unit_price: 15000, is_selected: true, group_name: "Convocation", display_order: 0, item_category: "photo" },
+                    { description: "Candid Videography", qty: 1, unit_price: 15000, is_selected: true, group_name: "Convocation", display_order: 1, item_category: "video" },
+                    { description: "Traditional Photography", qty: 2, unit_price: 10000, is_selected: true, group_name: "Convocation", display_order: 2, item_category: "photo" },
+                    { description: "Traditional Videography", qty: 2, unit_price: 15000, is_selected: true, group_name: "Convocation", display_order: 3, item_category: "video" },
+                    { description: "Drone", qty: 1, unit_price: 15000, is_selected: true, group_name: "Convocation", display_order: 4, item_category: "video" }
+                ]
+            }
+        ],
+        deliverables: [
+            { type: "photo", description: "All Candid & Traditional Photos (Raw Images)", qty: 1, price: 0, is_complimentary: true, group_name: "Photos", display_order: 0 },
+            { type: "video", description: "Full-Length Traditional Video", qty: 1, price: 0, is_complimentary: true, group_name: "Videos", display_order: 1 }
+        ]
+    },
+    election: {
+        intro: "Hey! A big hello from Rian Studioz. First of all, congratulations! We are as excited as you are for the Election Campaign. Thank you for considering Rian Studioz for your campaign.",
+        sections: [
+            {
+                title: "Election Campaign",
+                items: [
+                    { description: "Traditional Photography", qty: 10, unit_price: 12000, is_selected: true, group_name: "Campaign", display_order: 0, item_category: "photo" },
+                    { description: "Traditional Videography", qty: 10, unit_price: 12000, is_selected: true, group_name: "Campaign", display_order: 1, item_category: "video" },
+                    { description: "Drone", qty: 10, unit_price: 12000, is_selected: true, group_name: "Campaign", display_order: 2, item_category: "video" }
+                ]
+            }
+        ],
+        deliverables: [
+            { type: "photo", description: "Daily Photo Feed (Raw Images)", qty: 1, price: 0, is_complimentary: true, group_name: "Photos", display_order: 0 },
+            { type: "video", description: "Campaign Highlight Videos", qty: 1, price: 0, is_complimentary: true, group_name: "Videos", display_order: 1 }
+        ]
+    },
+    birthday: {
+        intro: "Hey! A big hello from Rian Studioz. First of all, congratulations! We are as excited as you are for the Birthday Celebration. Thank you for considering Rian Studioz for your event.",
+        sections: [
+            {
+                title: "Birthday Celebration",
+                items: [
+                    { description: "Candid Photography", qty: 1, unit_price: 12000, is_selected: true, group_name: "Birthday", display_order: 0, item_category: "photo" },
+                    { description: "Traditional Photography", qty: 1, unit_price: 8000, is_selected: true, group_name: "Birthday", display_order: 1, item_category: "photo" },
+                    { description: "Traditional Videography", qty: 1, unit_price: 10000, is_selected: true, group_name: "Birthday", display_order: 2, item_category: "video" }
+                ]
+            }
+        ],
+        deliverables: [
+            { type: "photo", description: "All photos in digital gallery", qty: 1, price: 0, is_complimentary: true, group_name: "Photos", display_order: 0 },
+            { type: "album", description: "1 Standard Birthday Album", qty: 1, price: 0, is_complimentary: true, group_name: "Albums", display_order: 1 }
+        ]
+    },
+    baby_shower: {
+        intro: "Hey! A big hello from Rian Studioz. First of all, congratulations! We are as excited as you are for the Baby Shower. Thank you for considering Rian Studioz for your event.",
+        sections: [
+            {
+                title: "Baby Shower",
+                items: [
+                    { description: "Candid Photography", qty: 1, unit_price: 15000, is_selected: true, group_name: "Baby Shower", display_order: 0, item_category: "photo" },
+                    { description: "Traditional Photography", qty: 1, unit_price: 8000, is_selected: true, group_name: "Baby Shower", display_order: 1, item_category: "photo" },
+                    { description: "Cinematic Teaser", qty: 1, unit_price: 12000, is_selected: true, group_name: "Baby Shower", display_order: 2, item_category: "video" }
+                ]
+            }
+        ],
+        deliverables: [
+            { type: "photo", description: "Digital Photo Gallery", qty: 1, price: 0, is_complimentary: true, group_name: "Photos", display_order: 0 },
+            { type: "album", description: "1 Premium photobook", qty: 1, price: 0, is_complimentary: true, group_name: "Albums", display_order: 1 }
+        ]
+    },
+    custom: {
+        intro: "Hey! A big hello from Rian Studioz. Thank you for considering Rian Studioz for your creative needs. Below is the custom tailored quotation and list of deliverables based on our discussion.",
+        sections: [
+            {
+                title: "Custom Services",
+                items: [
+                    { description: "Standard Photography", qty: 1, unit_price: 10000, is_selected: true, group_name: "Custom", display_order: 0, item_category: "photo" }
+                ]
+            }
+        ],
+        deliverables: [
+            { type: "photo", description: "Digital Deliverable Package", qty: 1, price: 0, is_complimentary: true, group_name: "Digital", display_order: 0 }
+        ]
+    }
+};
+
 document.addEventListener("DOMContentLoaded", () => {
     // 1. Initialize Collapsible Sections
     initCollapsibleSections();
@@ -17,6 +216,12 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // 4. Perform Initial Calculations
     recalculateAll();
+
+    // 5. Setup intro content sync
+    const introTextarea = document.getElementById("intro_content");
+    if (introTextarea) {
+        introTextarea.addEventListener("input", syncPreview);
+    }
 });
 
 /* ==========================================
@@ -37,13 +242,12 @@ function initCollapsibleSections() {
 function initQuoteTypeSelector() {
     const cards = document.querySelectorAll(".preset-card");
     const typeInput = document.getElementById("quote_type_code");
+    const isEdit = document.getElementById("is_edit").value === "true";
     
     cards.forEach(card => {
         card.addEventListener("click", () => {
             const selectedType = card.dataset.type;
             
-            // If it's an edit view, warning that switching type resets fields might be useful, 
-            // but for smooth UX we can just switch.
             cards.forEach(c => c.classList.remove("active"));
             card.classList.add("active");
             typeInput.value = selectedType;
@@ -51,14 +255,24 @@ function initQuoteTypeSelector() {
             // Toggle dynamic field sections
             toggleDynamicFields(selectedType);
             
-            // Trigger live preview refresh
-            recalculateAll();
+            // Load preset default fields
+            if (!isEdit || confirm("Switching presets will reset current sections, line items, and deliverables to their defaults. Proceed?")) {
+                loadPreset(selectedType);
+            }
         });
     });
     
     // Initialize active fields on page load
     if (typeInput) {
         toggleDynamicFields(typeInput.value);
+        // If it is a new quote and sections are empty or it's fresh, load default preset
+        const sectionsContainer = document.getElementById("sections_container");
+        const isFresh = sectionsContainer && sectionsContainer.children.length === 1 && 
+                        sectionsContainer.querySelector(".item-desc") && 
+                        sectionsContainer.querySelector(".item-desc").value.trim() === "";
+        if (!isEdit && isFresh) {
+            loadPreset(typeInput.value);
+        }
     }
 }
 
@@ -77,19 +291,82 @@ function toggleDynamicFields(typeCode) {
     }
 }
 
-/* ==========================================
-   Dynamic Repeating Fields & Editors
-   ========================================== */
-
-// --- SECTIONS & LINE ITEMS ---
-function addSection() {
-    const container = document.getElementById("sections_container");
-    const sectionIndex = container.children.length;
+function loadPreset(typeCode) {
+    const data = PRESETS_DATA[typeCode];
+    if (!data) return;
     
-    const sectionHtml = `
-        <div class="quote-section-block form-section" data-index="${sectionIndex}">
+    // 1. Load Intro Note
+    const introTextarea = document.getElementById("intro_content");
+    if (introTextarea) {
+        introTextarea.value = data.intro;
+    }
+    
+    // 2. Clear and Render Sections
+    const sectionsContainer = document.getElementById("sections_container");
+    if (sectionsContainer) {
+        sectionsContainer.innerHTML = "";
+        data.sections.forEach((sec, idx) => {
+            sectionsContainer.insertAdjacentHTML("beforeend", renderSectionHTML(idx, sec.title, sec.items));
+        });
+    }
+    
+    // 3. Clear and Render Deliverables
+    const deliverablesTbody = document.getElementById("deliverables_tbody");
+    if (deliverablesTbody) {
+        deliverablesTbody.innerHTML = "";
+        data.deliverables.forEach((deliv, idx) => {
+            deliverablesTbody.insertAdjacentHTML("beforeend", renderDeliverableRowHTML(deliv, idx));
+        });
+    }
+    
+    recalculateAll();
+}
+
+function renderSectionHTML(index, title, items = []) {
+    let tbodyHtml = "";
+    if (items.length === 0) {
+        items.push({ description: "", qty: 1, unit_price: 0, is_selected: true, group_name: title, display_order: 0, item_category: "photo" });
+    }
+    
+    items.forEach((item, itemIdx) => {
+        tbodyHtml += `
+            <tr class="line-item-row">
+                <td style="text-align: center; vertical-align: middle;">
+                    <input type="checkbox" class="item-select" ${item.is_selected ? 'checked' : ''} onchange="recalculateAll()">
+                </td>
+                <td>
+                    <input type="text" class="form-control item-desc" placeholder="Service description" value="${item.description}" required oninput="syncPreview()">
+                </td>
+                <td>
+                    <input type="number" class="form-control item-qty" value="${item.qty}" step="1" min="1" style="text-align: center;" oninput="onItemMathChange(this)">
+                </td>
+                <td>
+                    <input type="number" class="form-control item-price" value="${item.unit_price}" step="100" min="0" style="text-align: right;" oninput="onItemMathChange(this)">
+                </td>
+                <td class="item-total-cell" style="text-align: right; padding-top: 18px; font-weight: 600;">${(item.qty * item.unit_price).toFixed(2)}</td>
+                <td>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="text" class="form-control item-group-name" placeholder="Group" value="${item.group_name || title}" style="font-size: 11px;" oninput="syncPreview()">
+                        <select class="form-control item-cat" style="font-size: 11px;" onchange="syncPreview()">
+                            <option value="photo" ${item.item_category === 'photo' ? 'selected' : ''}>Photo</option>
+                            <option value="video" ${item.item_category === 'video' ? 'selected' : ''}>Video</option>
+                            <option value="album" ${item.item_category === 'album' ? 'selected' : ''}>Album</option>
+                            <option value="other" ${item.item_category === 'other' || !item.item_category ? 'selected' : ''}>Other</option>
+                        </select>
+                        <input type="number" class="form-control item-display-order" value="${item.display_order !== undefined ? item.display_order : itemIdx}" min="0" style="width: 50px; font-size: 11px;" oninput="syncPreview()">
+                    </div>
+                </td>
+                <td>
+                    <button type="button" class="action-icon text-danger" onclick="removeLineItem(this)"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    });
+
+    return `
+        <div class="quote-section-block form-section" data-index="${index}">
             <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
-                <h3 class="section-title-label">Grouped Package Section ${sectionIndex + 1}</h3>
+                <h3 class="section-title-label">${title || `Grouped Package Section ${index + 1}`}</h3>
                 <div>
                     <button type="button" class="btn btn-danger btn-sm" onclick="removeSection(this, event)">Remove Section</button>
                     <i class="fas fa-chevron-down" style="margin-left: 10px;"></i>
@@ -98,51 +375,92 @@ function addSection() {
             <div class="section-content">
                 <div class="form-group">
                     <label>Section Title (e.g. Wedding, Reception, Ad Shoot)</label>
-                    <input type="text" class="form-control section-title-input" value="New Section" oninput="updateSectionLabel(this)">
+                    <input type="text" class="form-control section-title-input" value="${title}" oninput="updateSectionLabel(this)">
                 </div>
                 
                 <table class="line-items-editor-table">
                     <thead>
                         <tr>
+                            <th style="width: 40px; text-align: center;">Active</th>
                             <th>Service Description</th>
                             <th class="qty-col">Qty</th>
                             <th class="price-col">Unit Price (₹)</th>
                             <th class="total-col" style="text-align: right;">Total (₹)</th>
+                            <th>Group / Category / Order</th>
                             <th style="width: 50px;"></th>
                         </tr>
                     </thead>
                     <tbody class="line-items-tbody">
-                        <tr class="line-item-row">
-                            <td>
-                                <input type="text" class="form-control item-desc" placeholder="Service description" required oninput="syncPreview()">
-                            </td>
-                            <td>
-                                <input type="number" class="form-control item-qty" value="1" step="1" min="1" style="text-align: center;" oninput="onItemMathChange(this)">
-                            </td>
-                            <td>
-                                <input type="number" class="form-control item-price" value="0" step="100" min="0" style="text-align: right;" oninput="onItemMathChange(this)">
-                            </td>
-                            <td class="item-total-cell" style="text-align: right; padding-top: 18px; font-weight: 600;">0.00</td>
-                            <td>
-                                <button type="button" class="action-icon text-danger" onclick="removeLineItem(this)"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
+                        ${tbodyHtml}
                     </tbody>
                 </table>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="addLineItem(this)">+ Add Service Item</button>
             </div>
         </div>
     `;
-    
-    container.insertAdjacentHTML("beforeend", sectionHtml);
+}
+
+function renderDeliverableRowHTML(item = {}, index = 0) {
+    const type = item.type || "photo";
+    const description = item.description || "";
+    const qty = item.qty !== undefined ? item.qty : 1;
+    const price = item.price !== undefined ? item.price : 0;
+    const is_selected = item.is_selected !== undefined ? item.is_selected : true;
+    const is_complimentary = item.is_complimentary !== undefined ? item.is_complimentary : true;
+    const group_name = item.group_name || "";
+    const display_order = item.display_order !== undefined ? item.display_order : index;
+
+    return `
+        <tr class="deliverable-row">
+            <td style="text-align: center; vertical-align: middle;">
+                <input type="checkbox" class="deliv-select" ${is_selected ? 'checked' : ''} onchange="recalculateAll()">
+            </td>
+            <td>
+                <select class="form-control deliv-type" onchange="syncPreview()">
+                    <option value="photo" ${type === 'photo' ? 'selected' : ''}>Photos</option>
+                    <option value="video" ${type === 'video' ? 'selected' : ''}>Videos / Teaser</option>
+                    <option value="album" ${type === 'album' ? 'selected' : ''}>Album / Print</option>
+                    <option value="turnaround" ${type === 'turnaround' ? 'selected' : ''}>Turnaround Time</option>
+                    <option value="other" ${type === 'other' ? 'selected' : ''}>Other</option>
+                </select>
+            </td>
+            <td>
+                <input type="text" class="form-control deliv-desc" value="${description}" required oninput="syncPreview()">
+            </td>
+            <td>
+                <input type="number" class="form-control deliv-qty" value="${qty}" step="1" min="0" style="text-align: center;" oninput="syncPreview()">
+            </td>
+            <td>
+                <input type="number" class="form-control deliv-price" value="${price}" step="100" min="0" style="text-align: right;" oninput="onDelivPriceChange(this)" ${is_complimentary ? 'disabled' : ''}>
+            </td>
+            <td style="text-align: center; vertical-align: middle;">
+                <input type="checkbox" class="deliv-complimentary" ${is_complimentary ? 'checked' : ''} onchange="onDelivComplimentaryChange(this)">
+            </td>
+            <td>
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" class="form-control deliv-group-name" placeholder="Group" value="${group_name}" style="font-size: 11px;" oninput="syncPreview()">
+                    <input type="number" class="form-control deliv-display-order" value="${display_order}" min="0" style="width: 50px; font-size: 11px;" oninput="syncPreview()">
+                </div>
+            </td>
+            <td>
+                <button type="button" class="action-icon text-danger" onclick="removeDeliverable(this)"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>
+    `;
+}
+
+// --- SECTIONS & LINE ITEMS ACTIONS ---
+function addSection() {
+    const container = document.getElementById("sections_container");
+    const sectionIndex = container.children.length;
+    container.insertAdjacentHTML("beforeend", renderSectionHTML(sectionIndex, "New Section"));
     recalculateAll();
 }
 
 function removeSection(button, event) {
-    event.stopPropagation(); // prevent collapsing trigger
-    if (confirm("Are you sure you want to remove this entire package section and all its service items?")) {
+    event.stopPropagation();
+    if (confirm("Are you sure you want to remove this entire package section?")) {
         button.closest(".quote-section-block").remove();
-        // Reindex section identifiers
         reindexSections();
         recalculateAll();
     }
@@ -171,8 +489,13 @@ function updateSectionLabel(input) {
 
 function addLineItem(button) {
     const tbody = button.closest(".section-content").querySelector(".line-items-tbody");
-    const rowHtml = `
+    const sectionTitle = button.closest(".section-content").querySelector(".section-title-input").value;
+    const itemIndex = tbody.children.length;
+    tbody.insertAdjacentHTML("beforeend", `
         <tr class="line-item-row">
+            <td style="text-align: center; vertical-align: middle;">
+                <input type="checkbox" class="item-select" checked onchange="recalculateAll()">
+            </td>
             <td>
                 <input type="text" class="form-control item-desc" placeholder="Service description" required oninput="syncPreview()">
             </td>
@@ -184,11 +507,22 @@ function addLineItem(button) {
             </td>
             <td class="item-total-cell" style="text-align: right; padding-top: 18px; font-weight: 600;">0.00</td>
             <td>
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" class="form-control item-group-name" placeholder="Group" value="${sectionTitle}" style="font-size: 11px;" oninput="syncPreview()">
+                    <select class="form-control item-cat" style="font-size: 11px;" onchange="syncPreview()">
+                        <option value="photo" selected>Photo</option>
+                        <option value="video">Video</option>
+                        <option value="album">Album</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <input type="number" class="form-control item-display-order" value="${itemIndex}" min="0" style="width: 50px; font-size: 11px;" oninput="syncPreview()">
+                </div>
+            </td>
+            <td>
                 <button type="button" class="action-icon text-danger" onclick="removeLineItem(this)"><i class="fas fa-trash"></i></button>
             </td>
         </tr>
-    `;
-    tbody.insertAdjacentHTML("beforeend", rowHtml);
+    `);
     recalculateAll();
 }
 
@@ -207,46 +541,40 @@ function onItemMathChange(input) {
     const qty = parseFloat(row.querySelector(".item-qty").value) || 0;
     const price = parseFloat(row.querySelector(".item-price").value) || 0;
     const total = qty * price;
-    
     row.querySelector(".item-total-cell").innerText = total.toFixed(2);
     recalculateAll();
 }
 
-// --- DELIVERABLES ---
+// --- DELIVERABLES ACTIONS ---
 function addDeliverable() {
     const tbody = document.getElementById("deliverables_tbody");
-    const rowHtml = `
-        <tr class="deliverable-row">
-            <td>
-                <select class="form-control deliv-type" onchange="syncPreview()">
-                    <option value="photo">Photos</option>
-                    <option value="video">Videos / Teaser</option>
-                    <option value="album">Album / Print</option>
-                    <option value="turnaround">Turnaround Time</option>
-                    <option value="other">Other</option>
-                </select>
-            </td>
-            <td>
-                <input type="text" class="form-control deliv-desc" placeholder="Deliverable details" required oninput="syncPreview()">
-            </td>
-            <td>
-                <input type="number" class="form-control deliv-qty" value="1" step="1" min="0" style="text-align: center;" oninput="syncPreview()">
-            </td>
-            <td>
-                <button type="button" class="action-icon text-danger" onclick="removeDeliverable(this)"><i class="fas fa-trash"></i></button>
-            </td>
-        </tr>
-    `;
-    tbody.insertAdjacentHTML("beforeend", rowHtml);
+    const index = tbody.children.length;
+    tbody.insertAdjacentHTML("beforeend", renderDeliverableRowHTML({}, index));
     syncPreview();
 }
 
 function removeDeliverable(button) {
     button.closest("tr").remove();
-    syncPreview();
+    recalculateAll();
 }
 
-// --- PAYMENT SPLITS ---
+function onDelivPriceChange(input) {
+    recalculateAll();
+}
+
+function onDelivComplimentaryChange(checkbox) {
+    const row = checkbox.closest("tr");
+    const priceInput = row.querySelector(".deliv-price");
+    if (checkbox.checked) {
+        priceInput.value = 0;
+        priceInput.disabled = true;
+    } else {
+        priceInput.disabled = false;
+    }
+    recalculateAll();
+}
+
+// --- PAYMENT SPLITS ACTIONS ---
 function addPaymentSplit() {
     const tbody = document.getElementById("payment_splits_tbody");
     const rowHtml = `
@@ -299,7 +627,6 @@ function redistributePaymentSplits(grandTotal) {
     const rows = document.querySelectorAll(".payment-split-row");
     if (rows.length === 0) return;
     
-    // If we have splits, try to match amounts to percentages
     rows.forEach(row => {
         const pctInput = row.querySelector(".split-percentage");
         const amtInput = row.querySelector(".split-amount");
@@ -312,7 +639,7 @@ function redistributePaymentSplits(grandTotal) {
     });
 }
 
-// --- ADD-ONS ---
+// --- ADD-ONS ACTIONS ---
 function addAddOnRow() {
     const tbody = document.getElementById("addons_tbody");
     const rowHtml = `
@@ -350,20 +677,35 @@ function onAddonMathChange(input) {
 function recalculateAll() {
     let subtotal = 0;
     
-    // 1. Calculate section totals
+    // 1. Calculate section totals from active/selected line items
     document.querySelectorAll(".quote-section-block").forEach(section => {
-        let sectionTotal = 0;
         section.querySelectorAll(".line-item-row").forEach(row => {
+            const isSelected = row.querySelector(".item-select") ? row.querySelector(".item-select").checked : true;
             const qty = parseFloat(row.querySelector(".item-qty").value) || 0;
             const price = parseFloat(row.querySelector(".item-price").value) || 0;
             const total = qty * price;
             row.querySelector(".item-total-cell").innerText = total.toFixed(2);
-            sectionTotal += total;
+            if (isSelected) {
+                subtotal += total;
+            }
         });
-        subtotal += sectionTotal;
+    });
+
+    // 2. Add deliverable prices if active/selected and not complimentary
+    let deliverablesTotal = 0;
+    document.querySelectorAll(".deliverable-row").forEach(row => {
+        const isSelected = row.querySelector(".deliv-select") ? row.querySelector(".deliv-select").checked : true;
+        const isComplimentary = row.querySelector(".deliv-complimentary") ? row.querySelector(".deliv-complimentary").checked : false;
+        const price = parseFloat(row.querySelector(".deliv-price").value) || 0;
+        const qty = parseFloat(row.querySelector(".deliv-qty").value) || 1;
+        if (isSelected && !isComplimentary) {
+            deliverablesTotal += qty * price;
+        }
     });
     
-    // 2. Add-ons calculations
+    subtotal += deliverablesTotal;
+    
+    // 3. Add-ons calculations
     let addonsTotal = 0;
     document.querySelectorAll(".addon-row").forEach(row => {
         const select = row.querySelector(".addon-select");
@@ -373,21 +715,35 @@ function recalculateAll() {
         }
     });
     
-    const grandTotal = subtotal + addonsTotal;
+    const totalBeforeDiscount = subtotal + addonsTotal;
     
-    // 3. Update displays
+    // 4. Calculate discount
+    const discountType = document.getElementById("discount_type") ? document.getElementById("discount_type").value : "none";
+    const discountVal = parseFloat(document.getElementById("discount_value") ? document.getElementById("discount_value").value : 0) || 0;
+    let discountAmount = 0;
+    if (discountType === "fixed") {
+        discountAmount = discountVal;
+    } else if (discountType === "percentage") {
+        discountAmount = totalBeforeDiscount * (discountVal / 100);
+    }
+    
+    const grandTotal = Math.max(0, totalBeforeDiscount - discountAmount);
+    
+    // 5. Update displays
     const subtotalDisplay = document.getElementById("subtotal_display");
     const addonsDisplay = document.getElementById("addons_total_display");
+    const discountDisplay = document.getElementById("discount_display");
     const grandTotalDisplay = document.getElementById("grand_total_display");
     
     if (subtotalDisplay) subtotalDisplay.innerText = subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     if (addonsDisplay) addonsDisplay.innerText = addonsTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (discountDisplay) discountDisplay.innerText = discountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     if (grandTotalDisplay) grandTotalDisplay.innerText = grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     
-    // 4. Update splits based on new total
+    // 6. Update splits based on new total
     redistributePaymentSplits(grandTotal);
     
-    // 5. Update right side preview
+    // 7. Update right side preview
     syncPreview();
 }
 
@@ -402,6 +758,9 @@ async function saveQuote(statusVal = "draft") {
     const template_id = parseInt(document.getElementById("template_id").value);
     const quote_type_code = document.getElementById("quote_type_code").value;
     const notes = document.getElementById("notes").value;
+    const intro_content = document.getElementById("intro_content") ? document.getElementById("intro_content").value : "";
+    const discount_type = document.getElementById("discount_type") ? document.getElementById("discount_type").value : "none";
+    const discount_value = parseFloat(document.getElementById("discount_value") ? document.getElementById("discount_value").value : 0) || 0;
     
     const client_name = document.getElementById("client_name").value;
     const client_email = document.getElementById("client_email").value;
@@ -430,13 +789,17 @@ async function saveQuote(statusVal = "draft") {
         const title = sectionBlock.querySelector(".section-title-input").value;
         const line_items = [];
         
-        sectionBlock.querySelectorAll(".line-item-row").forEach(row => {
+        sectionBlock.querySelectorAll(".line-item-row").forEach((row, i_idx) => {
             const description = row.querySelector(".item-desc").value;
             const qty = parseFloat(row.querySelector(".item-qty").value) || 1;
             const unit_price = parseFloat(row.querySelector(".item-price").value) || 0;
+            const is_selected = row.querySelector(".item-select") ? row.querySelector(".item-select").checked : true;
+            const group_name = row.querySelector(".item-group-name") ? row.querySelector(".item-group-name").value : title;
+            const display_order = parseInt(row.querySelector(".item-display-order") ? row.querySelector(".item-display-order").value : i_idx) || 0;
+            const item_category = row.querySelector(".item-cat") ? row.querySelector(".item-cat").value : "other";
             
             if (description.trim() !== "") {
-                line_items.push({ description, qty, unit_price });
+                line_items.push({ description, qty, unit_price, is_selected, group_name, display_order, item_category });
             }
         });
         
@@ -452,13 +815,18 @@ async function saveQuote(statusVal = "draft") {
     
     // 4. Gather Deliverables
     const deliverables = [];
-    document.querySelectorAll(".deliverable-row").forEach(row => {
+    document.querySelectorAll(".deliverable-row").forEach((row, d_idx) => {
         const type = row.querySelector(".deliv-type").value;
         const description = row.querySelector(".deliv-desc").value;
         const qty = parseInt(row.querySelector(".deliv-qty").value) || 0;
+        const is_selected = row.querySelector(".deliv-select") ? row.querySelector(".deliv-select").checked : true;
+        const price = parseFloat(row.querySelector(".deliv-price") ? row.querySelector(".deliv-price").value : 0) || 0;
+        const is_complimentary = row.querySelector(".deliv-complimentary") ? row.querySelector(".deliv-complimentary").checked : false;
+        const group_name = row.querySelector(".deliv-group-name") ? row.querySelector(".deliv-group-name").value : type;
+        const display_order = parseInt(row.querySelector(".deliv-display-order") ? row.querySelector(".deliv-display-order").value : d_idx) || 0;
         
         if (description.trim() !== "") {
-            deliverables.push({ type, description, qty });
+            deliverables.push({ type, description, qty, is_selected, price, is_complimentary, group_name, display_order, item_category: type });
         }
     });
     
@@ -503,6 +871,9 @@ async function saveQuote(statusVal = "draft") {
         quotation_date,
         status: statusVal,
         notes,
+        discount_type,
+        discount_value,
+        intro_content,
         brand_id,
         quote_type_code,
         template_id,

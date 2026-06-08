@@ -19,7 +19,12 @@
             
             <div class="form-group" style="margin-bottom: 30px;">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" class="form-control" placeholder="Enter password" required autocomplete="current-password">
+                <div class="password-wrapper" style="position: relative;">
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter password" required autocomplete="current-password" style="padding-right: 45px;">
+                    <button type="button" id="password_toggle" class="password-toggle-btn" aria-label="Show password" aria-pressed="false" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 5px; font-size: 16px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
             </div>
             
             <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
@@ -32,4 +37,27 @@
         </form>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const passwordInput = document.getElementById("password");
+        const toggleButton = document.getElementById("password_toggle");
+        if (passwordInput && toggleButton) {
+            toggleButton.addEventListener("click", () => {
+                const isPressed = toggleButton.getAttribute("aria-pressed") === "true";
+                if (isPressed) {
+                    passwordInput.type = "password";
+                    toggleButton.setAttribute("aria-pressed", "false");
+                    toggleButton.setAttribute("aria-label", "Show password");
+                    toggleButton.innerHTML = '<i class="fas fa-eye"></i>';
+                } else {
+                    passwordInput.type = "text";
+                    toggleButton.setAttribute("aria-pressed", "true");
+                    toggleButton.setAttribute("aria-label", "Hide password");
+                    toggleButton.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}
