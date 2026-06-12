@@ -322,3 +322,125 @@ def test_feature_pdf_smoke_test(client):
     assert data["status"] == "success"
     assert "pdf_path" in data
     assert data["pdf_path"].endswith(".pdf")
+
+def test_feature_brand_settings_presets(client):
+    # 1. Fetch current settings
+    get_res = client.get("/api/settings")
+    assert get_res.status_code == 200
+    settings_data = get_res.json()
+    assert "brand" in settings_data
+    assert settings_data["brand"]["name"] == "Rian Studioz"
+    
+    # 2. Modify settings (specifically presets_json)
+    custom_presets = {
+        "presets": {
+            "wedding": {
+                "intro": "Custom Wedding Intro",
+                "sections": [
+                    {
+                        "title": "Custom Wedding Section",
+                        "items": [
+                            { "description": "Custom Wedding Photo", "qty": 1, "unit_price": 50000, "is_selected": True }
+                        ]
+                    }
+                ],
+                "deliverables": []
+            }
+        },
+        "addons": [
+            { "description": "Custom Addon Item", "price": 9999 }
+        ]
+    }
+    
+    import json
+    update_payload = {
+        "webhook_url": "https://example.com/webhook",
+        "brand": {
+            "name": "Updated Rian Studioz",
+            "email": "contact@rianstudioz.com",
+            "phone": "+91 98765 43210",
+            "address": "Chennai",
+            "terms_and_conditions": "New Split.",
+            "payment_info": "HDFC",
+            "presets_json": json.dumps(custom_presets)
+        }
+    }
+    
+    put_res = client.put("/api/settings", json=update_payload)
+    assert put_res.status_code == 200
+    updated_data = put_res.json()
+    assert updated_data["brand"]["name"] == "Updated Rian Studioz"
+    assert updated_data["brand"]["presets_json"] is not None
+    
+    # 3. Retrieve settings again to ensure persistence
+    get_res_2 = client.get("/api/settings")
+    assert get_res_2.status_code == 200
+    retrieved_data = get_res_2.json()
+    retrieved_presets = json.loads(retrieved_data["brand"]["presets_json"])
+    assert "presets" in retrieved_presets
+    assert retrieved_presets["presets"]["wedding"]["intro"] == "Custom Wedding Intro"
+    assert retrieved_presets["addons"][0]["description"] == "Custom Addon Item"
+    assert retrieved_presets["addons"][0]["price"] == 9999
+
+def test_feature_deliverables_card_preview(client):
+    # Create a quote with both paid and complimentary deliverables
+    payload = {
+        "quotation_number": "RS-FEAT-DELIV",
+        "quotation_date": str(date.today()),
+        "status": "draft",
+        "discount_type": "none",
+        "discount_value": 0.00,
+        "intro_content": "Deliverables rendering test",
+        "brand_id": 1,
+        "quote_type_code": "wedding",
+        "template_id": 1,
+        "client_name": "Deliv Client",
+        "sections": [
+            {
+                "title": "Coverage",
+                "line_items": [{"description": "Standard", "qty": 1, "unit_price": 10000, "is_selected": True}]
+            }
+        ],
+        "deliverables": [
+            {
+                "type": "photo",
+                "description": "Comp Photos",
+                "qty": 10,
+                "is_selected": True,
+                "price": 0.00,
+                "is_complimentary": True
+            },
+            {
+                "type": "album",
+                "description": "Paid Album Output",
+                "qty": 2,
+                "is_selected": True,
+                "price": 15000.00,
+                "is_complimentary": False
+            }
+        ],
+        "payment_splits": [],
+        "add_ons": []
+    }
+    
+    create_res = client.post("/api/quotes", json=payload)
+    assert create_res.status_code == 200
+    quote_id = create_res.json()["id"]
+    
+    # Render preview
+    preview_res = client.get(f"/quotes/{quote_id}/preview")
+    assert preview_res.status_code == 200
+    html_content = preview_res.text
+    
+    # Assert deliverables section header is rendered
+    assert "Deliverables &amp; Deliverable Specifications" in html_content or "Deliverables & Deliverable Specifications" in html_content
+    # Assert deliverable cards are present
+    assert "deliverable-card" in html_content
+    # Assert complimentary badge exists
+    assert "Complimentary" in html_content
+    # Assert paid album price is rendered (formatted)
+    assert "₹15,000.00" in html_content
+    # Assert descriptions are rendered
+    assert "Comp Photos" in html_content
+    assert "Paid Album Output" in html_content
+

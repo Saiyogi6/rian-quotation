@@ -225,6 +225,7 @@ def update_settings(payload: SettingsUpdate, db: Session = Depends(get_db)):
     brand.address = payload.brand.address
     brand.terms_and_conditions = payload.brand.terms_and_conditions
     brand.payment_info = payload.brand.payment_info
+    brand.presets_json = payload.brand.presets_json
     
     # Update webhook settings
     import os

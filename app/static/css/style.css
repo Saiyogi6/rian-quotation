@@ -853,7 +853,6 @@ header {
     
     /* Avoid breaking inside important structural components */
     .payment-terms-grid, 
-    .deliverables-grid, 
     .dynamic-meta-grid,
     .quote-totals-block {
         page-break-inside: avoid;

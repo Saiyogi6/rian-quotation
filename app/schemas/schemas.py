@@ -13,6 +13,7 @@ class BrandBase(BaseModel):
     address: Optional[str] = None
     terms_and_conditions: Optional[str] = None
     payment_info: Optional[str] = None
+    presets_json: Optional[str] = None
 
 class BrandResponse(BrandBase):
     id: int

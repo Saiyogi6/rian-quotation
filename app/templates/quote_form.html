@@ -399,7 +399,6 @@
                                         <th class="qty-col">Qty</th>
                                         <th class="price-col">Unit Price (₹)</th>
                                         <th class="total-col" style="text-align: right;">Total (₹)</th>
-                                        <th>Group / Category / Order</th>
                                         <th style="width: 50px;"></th>
                                     </tr>
                                 </thead>
@@ -410,7 +409,12 @@
                                             <input type="checkbox" class="item-select" {% if item.is_selected %}checked{% endif %} onchange="recalculateAll()">
                                         </td>
                                         <td>
-                                            <input type="text" class="form-control item-desc" placeholder="Service description" value="{{ item.description }}" required oninput="syncPreview()">
+                                            <div class="desc-container" style="display: flex; flex-direction: column; gap: 5px;">
+                                                <select class="form-control item-desc-select" onchange="onItemDescSelectChange(this)">
+                                                    <!-- Options populated dynamically -->
+                                                </select>
+                                                <input type="text" class="form-control item-desc" placeholder="Service description" value="{{ item.description }}" required oninput="syncPreview()">
+                                            </div>
                                         </td>
                                         <td>
                                             <input type="number" class="form-control item-qty" value="{{ item.qty | int }}" step="1" min="1" style="text-align: center;" oninput="onItemMathChange(this)">
@@ -419,18 +423,6 @@
                                             <input type="number" class="form-control item-price" value="{{ item.unit_price | int }}" step="100" min="0" style="text-align: right;" oninput="onItemMathChange(this)">
                                         </td>
                                         <td class="item-total-cell" style="text-align: right; padding-top: 18px; font-weight: 600;">{{ item.total_price }}</td>
-                                        <td>
-                                            <div style="display: flex; gap: 5px;">
-                                                <input type="text" class="form-control item-group-name" placeholder="Group" value="{{ item.group_name or sec.title }}" style="font-size: 11px;" oninput="syncPreview()">
-                                                <select class="form-control item-cat" style="font-size: 11px;" onchange="syncPreview()">
-                                                    <option value="photo" {% if item.item_category == 'photo' %}selected{% endif %}>Photo</option>
-                                                    <option value="video" {% if item.item_category == 'video' %}selected{% endif %}>Video</option>
-                                                    <option value="album" {% if item.item_category == 'album' %}selected{% endif %}>Album</option>
-                                                    <option value="other" {% if item.item_category == 'other' or not item.item_category %}selected{% endif %}>Other</option>
-                                                </select>
-                                                <input type="number" class="form-control item-display-order" value="{{ item.display_order or loop.index0 }}" min="0" style="width: 50px; font-size: 11px;" oninput="syncPreview()">
-                                            </div>
-                                        </td>
                                         <td>
                                             <button type="button" class="action-icon text-danger" onclick="removeLineItem(this)"><i class="fas fa-trash"></i></button>
                                         </td>
@@ -466,7 +458,6 @@
                                         <th class="qty-col">Qty</th>
                                         <th class="price-col">Unit Price (₹)</th>
                                         <th class="total-col" style="text-align: right;">Total (₹)</th>
-                                        <th>Group / Category / Order</th>
                                         <th style="width: 50px;"></th>
                                     </tr>
                                 </thead>
@@ -476,7 +467,12 @@
                                             <input type="checkbox" class="item-select" checked onchange="recalculateAll()">
                                         </td>
                                         <td>
-                                            <input type="text" class="form-control item-desc" placeholder="Service description" required oninput="syncPreview()">
+                                            <div class="desc-container" style="display: flex; flex-direction: column; gap: 5px;">
+                                                <select class="form-control item-desc-select" onchange="onItemDescSelectChange(this)">
+                                                    <!-- Options populated dynamically -->
+                                                </select>
+                                                <input type="text" class="form-control item-desc" placeholder="Service description" required oninput="syncPreview()">
+                                            </div>
                                         </td>
                                         <td>
                                             <input type="number" class="form-control item-qty" value="1" step="1" min="1" style="text-align: center;" oninput="onItemMathChange(this)">
@@ -485,18 +481,6 @@
                                             <input type="number" class="form-control item-price" value="0" step="100" min="0" style="text-align: right;" oninput="onItemMathChange(this)">
                                         </td>
                                         <td class="item-total-cell" style="text-align: right; padding-top: 18px; font-weight: 600;">0.00</td>
-                                        <td>
-                                            <div style="display: flex; gap: 5px;">
-                                                <input type="text" class="form-control item-group-name" placeholder="Group" value="Standard Coverage" style="font-size: 11px;" oninput="syncPreview()">
-                                                <select class="form-control item-cat" style="font-size: 11px;" onchange="syncPreview()">
-                                                    <option value="photo" selected>Photo</option>
-                                                    <option value="video">Video</option>
-                                                    <option value="album">Album</option>
-                                                    <option value="other">Other</option>
-                                                </select>
-                                                <input type="number" class="form-control item-display-order" value="0" min="0" style="width: 50px; font-size: 11px;" oninput="syncPreview()">
-                                            </div>
-                                        </td>
                                         <td>
                                             <button type="button" class="action-icon text-danger" onclick="removeLineItem(this)"><i class="fas fa-trash"></i></button>
                                         </td>
@@ -525,8 +509,6 @@
                             <th>Description Detail</th>
                             <th class="qty-col">Qty</th>
                             <th class="price-col">Price (₹)</th>
-                            <th style="width: 80px; text-align: center;">Complimentary</th>
-                            <th>Group / Order</th>
                             <th style="width: 50px;"></th>
                         </tr>
                     </thead>
@@ -553,16 +535,7 @@
                                     <input type="number" class="form-control deliv-qty" value="{{ deliv.qty or 1 }}" step="1" min="0" style="text-align: center;" oninput="syncPreview()">
                                 </td>
                                 <td>
-                                    <input type="number" class="form-control deliv-price" value="{{ deliv.price | int }}" step="100" min="0" style="text-align: right;" oninput="onDelivPriceChange(this)" {% if deliv.is_complimentary %}disabled{% endif %}>
-                                </td>
-                                <td style="text-align: center; vertical-align: middle;">
-                                    <input type="checkbox" class="deliv-complimentary" {% if deliv.is_complimentary %}checked{% endif %} onchange="onDelivComplimentaryChange(this)">
-                                </td>
-                                <td>
-                                    <div style="display: flex; gap: 5px;">
-                                        <input type="text" class="form-control deliv-group-name" placeholder="Group" value="{{ deliv.group_name or '' }}" style="font-size: 11px;" oninput="syncPreview()">
-                                        <input type="number" class="form-control deliv-display-order" value="{{ deliv.display_order or loop.index0 }}" min="0" style="width: 50px; font-size: 11px;" oninput="syncPreview()">
-                                    </div>
+                                    <input type="number" class="form-control deliv-price" value="{{ deliv.price | int }}" step="100" min="0" style="text-align: right;" oninput="syncPreview()">
                                 </td>
                                 <td>
                                     <button type="button" class="action-icon text-danger" onclick="removeDeliverable(this)"><i class="fas fa-trash"></i></button>
@@ -695,7 +668,12 @@
                             {% for add in quote.add_ons %}
                             <tr class="addon-row">
                                 <td>
-                                    <input type="text" class="form-control addon-desc" value="{{ add.description }}" required oninput="syncPreview()">
+                                    <div class="desc-container" style="display: flex; flex-direction: column; gap: 5px;">
+                                        <select class="form-control addon-desc-select" onchange="onAddonDescSelectChange(this)">
+                                            <!-- Options populated dynamically -->
+                                        </select>
+                                        <input type="text" class="form-control addon-desc" value="{{ add.description }}" required oninput="syncPreview()">
+                                    </div>
                                 </td>
                                 <td>
                                     <input type="number" class="form-control addon-price" value="{{ add.price | int }}" step="500" min="0" style="text-align: right;" oninput="onAddonMathChange(this)">
@@ -921,9 +899,20 @@
 
 {% block scripts %}
 <script src="/static/js/preview.js"></script>
+<script>
+    // Injected dynamic presets from database
+    const INJECTED_PRESETS_DATA = {{ brand.presets_json | safe if brand and brand.presets_json else 'null' }};
+</script>
 <script src="/static/js/main.js"></script>
 <script>
     // Set active link
     document.getElementById("nav_new_quote").classList.add("active");
+    // Initialize selects on load
+    if (typeof populateAllDescSelects === 'function') {
+        populateAllDescSelects();
+    }
+    if (typeof populateAllAddonDescSelects === 'function') {
+        populateAllAddonDescSelects();
+    }
 </script>
 {% endblock %}

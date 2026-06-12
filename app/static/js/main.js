@@ -3,7 +3,7 @@
 // Handles dynamic form logic, calculations, repeating fields, and submissions
 // ==========================================================================
 
-const PRESETS_DATA = {
+const PRESETS_DATA = window.INJECTED_PRESETS_DATA || {
     wedding_reception: {
         intro: "Hey! A big hello from Rian Studioz. First of all, congratulations! We are as excited as you are for the Wedding & Reception Ceremony. Thank you for considering Rian Studioz for your big day. We guarantee to capture your best moments, which you will look back on with a smile in the future. We eagerly await to surprise you with amazing pictures and videos.",
         sections: [
@@ -292,7 +292,7 @@ function toggleDynamicFields(typeCode) {
 }
 
 function loadPreset(typeCode) {
-    const data = PRESETS_DATA[typeCode];
+    const data = PRESETS_DATA.presets ? PRESETS_DATA.presets[typeCode] : PRESETS_DATA[typeCode];
     if (!data) return;
     
     // 1. Load Intro Note
@@ -319,6 +319,9 @@ function loadPreset(typeCode) {
         });
     }
     
+    // Populate dropdowns
+    populateAllDescSelects();
+    
     recalculateAll();
 }
 
@@ -335,7 +338,12 @@ function renderSectionHTML(index, title, items = []) {
                     <input type="checkbox" class="item-select" ${item.is_selected ? 'checked' : ''} onchange="recalculateAll()">
                 </td>
                 <td>
-                    <input type="text" class="form-control item-desc" placeholder="Service description" value="${item.description}" required oninput="syncPreview()">
+                    <div class="desc-container" style="display: flex; flex-direction: column; gap: 5px;">
+                        <select class="form-control item-desc-select" onchange="onItemDescSelectChange(this)">
+                            <!-- Options populated dynamically -->
+                        </select>
+                        <input type="text" class="form-control item-desc" placeholder="Service description" value="${item.description}" required oninput="syncPreview()">
+                    </div>
                 </td>
                 <td>
                     <input type="number" class="form-control item-qty" value="${item.qty}" step="1" min="1" style="text-align: center;" oninput="onItemMathChange(this)">
@@ -344,18 +352,6 @@ function renderSectionHTML(index, title, items = []) {
                     <input type="number" class="form-control item-price" value="${item.unit_price}" step="100" min="0" style="text-align: right;" oninput="onItemMathChange(this)">
                 </td>
                 <td class="item-total-cell" style="text-align: right; padding-top: 18px; font-weight: 600;">${(item.qty * item.unit_price).toFixed(2)}</td>
-                <td>
-                    <div style="display: flex; gap: 5px;">
-                        <input type="text" class="form-control item-group-name" placeholder="Group" value="${item.group_name || title}" style="font-size: 11px;" oninput="syncPreview()">
-                        <select class="form-control item-cat" style="font-size: 11px;" onchange="syncPreview()">
-                            <option value="photo" ${item.item_category === 'photo' ? 'selected' : ''}>Photo</option>
-                            <option value="video" ${item.item_category === 'video' ? 'selected' : ''}>Video</option>
-                            <option value="album" ${item.item_category === 'album' ? 'selected' : ''}>Album</option>
-                            <option value="other" ${item.item_category === 'other' || !item.item_category ? 'selected' : ''}>Other</option>
-                        </select>
-                        <input type="number" class="form-control item-display-order" value="${item.display_order !== undefined ? item.display_order : itemIdx}" min="0" style="width: 50px; font-size: 11px;" oninput="syncPreview()">
-                    </div>
-                </td>
                 <td>
                     <button type="button" class="action-icon text-danger" onclick="removeLineItem(this)"><i class="fas fa-trash"></i></button>
                 </td>
@@ -386,7 +382,6 @@ function renderSectionHTML(index, title, items = []) {
                             <th class="qty-col">Qty</th>
                             <th class="price-col">Unit Price (₹)</th>
                             <th class="total-col" style="text-align: right;">Total (₹)</th>
-                            <th>Group / Category / Order</th>
                             <th style="width: 50px;"></th>
                         </tr>
                     </thead>
@@ -406,9 +401,6 @@ function renderDeliverableRowHTML(item = {}, index = 0) {
     const qty = item.qty !== undefined ? item.qty : 1;
     const price = item.price !== undefined ? item.price : 0;
     const is_selected = item.is_selected !== undefined ? item.is_selected : true;
-    const is_complimentary = item.is_complimentary !== undefined ? item.is_complimentary : true;
-    const group_name = item.group_name || "";
-    const display_order = item.display_order !== undefined ? item.display_order : index;
 
     return `
         <tr class="deliverable-row">
@@ -431,16 +423,7 @@ function renderDeliverableRowHTML(item = {}, index = 0) {
                 <input type="number" class="form-control deliv-qty" value="${qty}" step="1" min="0" style="text-align: center;" oninput="syncPreview()">
             </td>
             <td>
-                <input type="number" class="form-control deliv-price" value="${price}" step="100" min="0" style="text-align: right;" oninput="onDelivPriceChange(this)" ${is_complimentary ? 'disabled' : ''}>
-            </td>
-            <td style="text-align: center; vertical-align: middle;">
-                <input type="checkbox" class="deliv-complimentary" ${is_complimentary ? 'checked' : ''} onchange="onDelivComplimentaryChange(this)">
-            </td>
-            <td>
-                <div style="display: flex; gap: 5px;">
-                    <input type="text" class="form-control deliv-group-name" placeholder="Group" value="${group_name}" style="font-size: 11px;" oninput="syncPreview()">
-                    <input type="number" class="form-control deliv-display-order" value="${display_order}" min="0" style="width: 50px; font-size: 11px;" oninput="syncPreview()">
-                </div>
+                <input type="number" class="form-control deliv-price" value="${price}" step="100" min="0" style="text-align: right;" oninput="syncPreview()">
             </td>
             <td>
                 <button type="button" class="action-icon text-danger" onclick="removeDeliverable(this)"><i class="fas fa-trash"></i></button>
@@ -489,15 +472,18 @@ function updateSectionLabel(input) {
 
 function addLineItem(button) {
     const tbody = button.closest(".section-content").querySelector(".line-items-tbody");
-    const sectionTitle = button.closest(".section-content").querySelector(".section-title-input").value;
-    const itemIndex = tbody.children.length;
     tbody.insertAdjacentHTML("beforeend", `
         <tr class="line-item-row">
             <td style="text-align: center; vertical-align: middle;">
                 <input type="checkbox" class="item-select" checked onchange="recalculateAll()">
             </td>
             <td>
-                <input type="text" class="form-control item-desc" placeholder="Service description" required oninput="syncPreview()">
+                <div class="desc-container" style="display: flex; flex-direction: column; gap: 5px;">
+                    <select class="form-control item-desc-select" onchange="onItemDescSelectChange(this)">
+                        <!-- Options populated dynamically -->
+                    </select>
+                    <input type="text" class="form-control item-desc" placeholder="Service description" required oninput="syncPreview()">
+                </div>
             </td>
             <td>
                 <input type="number" class="form-control item-qty" value="1" step="1" min="1" style="text-align: center;" oninput="onItemMathChange(this)">
@@ -507,22 +493,13 @@ function addLineItem(button) {
             </td>
             <td class="item-total-cell" style="text-align: right; padding-top: 18px; font-weight: 600;">0.00</td>
             <td>
-                <div style="display: flex; gap: 5px;">
-                    <input type="text" class="form-control item-group-name" placeholder="Group" value="${sectionTitle}" style="font-size: 11px;" oninput="syncPreview()">
-                    <select class="form-control item-cat" style="font-size: 11px;" onchange="syncPreview()">
-                        <option value="photo" selected>Photo</option>
-                        <option value="video">Video</option>
-                        <option value="album">Album</option>
-                        <option value="other">Other</option>
-                    </select>
-                    <input type="number" class="form-control item-display-order" value="${itemIndex}" min="0" style="width: 50px; font-size: 11px;" oninput="syncPreview()">
-                </div>
-            </td>
-            <td>
                 <button type="button" class="action-icon text-danger" onclick="removeLineItem(this)"><i class="fas fa-trash"></i></button>
             </td>
         </tr>
     `);
+    const newRow = tbody.lastElementChild;
+    const select = newRow.querySelector(".item-desc-select");
+    populateServiceDescSelect(select, "");
     recalculateAll();
 }
 
@@ -645,7 +622,12 @@ function addAddOnRow() {
     const rowHtml = `
         <tr class="addon-row">
             <td>
-                <input type="text" class="form-control addon-desc" placeholder="Add-on service" required oninput="syncPreview()">
+                <div class="desc-container" style="display: flex; flex-direction: column; gap: 5px;">
+                    <select class="form-control addon-desc-select" onchange="onAddonDescSelectChange(this)">
+                        <!-- Options populated dynamically -->
+                    </select>
+                    <input type="text" class="form-control addon-desc" placeholder="Add-on service" required oninput="syncPreview()">
+                </div>
             </td>
             <td>
                 <input type="number" class="form-control addon-price" value="0" step="500" min="0" style="text-align: right;" oninput="onAddonMathChange(this)">
@@ -659,6 +641,9 @@ function addAddOnRow() {
         </tr>
     `;
     tbody.insertAdjacentHTML("beforeend", rowHtml);
+    const newRow = tbody.lastElementChild;
+    const select = newRow.querySelector(".addon-desc-select");
+    populateAddonDescSelect(select, "");
     recalculateAll();
 }
 
@@ -695,8 +680,8 @@ function recalculateAll() {
     let deliverablesTotal = 0;
     document.querySelectorAll(".deliverable-row").forEach(row => {
         const isSelected = row.querySelector(".deliv-select") ? row.querySelector(".deliv-select").checked : true;
-        const isComplimentary = row.querySelector(".deliv-complimentary") ? row.querySelector(".deliv-complimentary").checked : false;
         const price = parseFloat(row.querySelector(".deliv-price").value) || 0;
+        const isComplimentary = (price === 0);
         const qty = parseFloat(row.querySelector(".deliv-qty").value) || 1;
         if (isSelected && !isComplimentary) {
             deliverablesTotal += qty * price;
@@ -821,9 +806,9 @@ async function saveQuote(statusVal = "draft") {
         const qty = parseInt(row.querySelector(".deliv-qty").value) || 0;
         const is_selected = row.querySelector(".deliv-select") ? row.querySelector(".deliv-select").checked : true;
         const price = parseFloat(row.querySelector(".deliv-price") ? row.querySelector(".deliv-price").value : 0) || 0;
-        const is_complimentary = row.querySelector(".deliv-complimentary") ? row.querySelector(".deliv-complimentary").checked : false;
-        const group_name = row.querySelector(".deliv-group-name") ? row.querySelector(".deliv-group-name").value : type;
-        const display_order = parseInt(row.querySelector(".deliv-display-order") ? row.querySelector(".deliv-display-order").value : d_idx) || 0;
+        const is_complimentary = (price === 0);
+        const group_name = type;
+        const display_order = d_idx;
         
         if (description.trim() !== "") {
             deliverables.push({ type, description, qty, is_selected, price, is_complimentary, group_name, display_order, item_category: type });
@@ -933,3 +918,183 @@ async function exportPdf(quoteId) {
         console.error("Error auto-generating PDF: ", e);
     }
 }
+
+// --- DYNAMIC PRESETS DROPDOWN LOGIC ---
+
+function populateServiceDescSelect(selectElement, selectedValue = "") {
+    const typeCode = document.getElementById("quote_type_code")?.value || "wedding_reception";
+    const preset = PRESETS_DATA.presets ? PRESETS_DATA.presets[typeCode] : PRESETS_DATA[typeCode];
+    
+    // Clear select
+    selectElement.innerHTML = "";
+    
+    // Add default select option
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = "-- Select Predefined Service --";
+    selectElement.appendChild(defaultOption);
+    
+    let isPredefinedMatched = false;
+    
+    if (preset && preset.sections) {
+        // Collect all predefined items in this preset
+        const predefinedItems = [];
+        preset.sections.forEach(sec => {
+            sec.items.forEach(item => {
+                if (!predefinedItems.find(i => i.description === item.description)) {
+                    predefinedItems.push(item);
+                }
+            });
+        });
+        
+        predefinedItems.forEach(item => {
+            const opt = document.createElement("option");
+            opt.value = item.description;
+            opt.textContent = `${item.description} (₹${item.unit_price})`;
+            opt.dataset.price = item.unit_price;
+            if (item.description === selectedValue) {
+                opt.selected = true;
+                isPredefinedMatched = true;
+            }
+            selectElement.appendChild(opt);
+        });
+    }
+    
+    // Add Custom option
+    const customOption = document.createElement("option");
+    customOption.value = "__custom__";
+    customOption.textContent = "Custom Service (Type manually)...";
+    if (selectedValue && !isPredefinedMatched) {
+        customOption.selected = true;
+    }
+    selectElement.appendChild(customOption);
+    
+    // Show/hide the text input
+    const textInput = selectElement.parentElement.querySelector(".item-desc");
+    if (selectElement.value === "__custom__" || selectElement.value === "") {
+        textInput.style.display = "block";
+    } else {
+        textInput.style.display = "none";
+    }
+}
+
+function onItemDescSelectChange(selectElement) {
+    const textInput = selectElement.parentElement.querySelector(".item-desc");
+    const priceInput = selectElement.closest(".line-item-row").querySelector(".item-price");
+    
+    if (selectElement.value === "__custom__") {
+        textInput.style.display = "block";
+        textInput.value = "";
+        textInput.focus();
+    } else if (selectElement.value === "") {
+        textInput.style.display = "block";
+        textInput.value = "";
+    } else {
+        textInput.style.display = "none";
+        textInput.value = selectElement.value;
+        
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        const price = selectedOption.dataset.price;
+        if (price !== undefined) {
+            priceInput.value = price;
+        }
+    }
+    onItemMathChange(priceInput);
+}
+
+function populateAllDescSelects() {
+    document.querySelectorAll(".line-item-row").forEach(row => {
+        const select = row.querySelector(".item-desc-select");
+        const input = row.querySelector(".item-desc");
+        if (select && input) {
+            populateServiceDescSelect(select, input.value);
+        }
+    });
+}
+
+function populateAddonDescSelect(selectElement, selectedValue = "") {
+    const addons = PRESETS_DATA.addons || [
+        { "description": "1 Extra Traditional Photography", "price": 10000 },
+        { "description": "1 Extra Traditional Videography(4K)", "price": 15000 },
+        { "description": "1 Extra Candid Photography", "price": 15000 },
+        { "description": "1 Extra Candid Videography", "price": 15000 },
+        { "description": "Drone", "price": 12000 },
+        { "description": "1 Extra Album", "price": 20000 },
+        { "description": "LED Wall (6 x 8)", "price": 13000 },
+        { "description": "LED TV(50\u2019Inches)", "price": 5000 },
+        { "description": "Spot Mixing", "price": 10000 },
+        { "description": "PhotoBooth", "price": 25000 },
+        { "description": "360o Spinny", "price": 15000 },
+        { "description": "Youtube Live Streaming 1080p", "price": 10000 }
+    ];
+    
+    selectElement.innerHTML = "";
+    
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = "-- Select Predefined Add-on --";
+    selectElement.appendChild(defaultOption);
+    
+    let isPredefinedMatched = false;
+    addons.forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item.description;
+        opt.textContent = `${item.description} (₹${item.price})`;
+        opt.dataset.price = item.price;
+        if (item.description === selectedValue) {
+            opt.selected = true;
+            isPredefinedMatched = true;
+        }
+        selectElement.appendChild(opt);
+    });
+    
+    const customOption = document.createElement("option");
+    customOption.value = "__custom__";
+    customOption.textContent = "Custom Add-on (Type manually)...";
+    if (selectedValue && !isPredefinedMatched) {
+        customOption.selected = true;
+    }
+    selectElement.appendChild(customOption);
+    
+    const textInput = selectElement.parentElement.querySelector(".addon-desc");
+    if (selectElement.value === "__custom__" || selectElement.value === "") {
+        textInput.style.display = "block";
+    } else {
+        textInput.style.display = "none";
+    }
+}
+
+function onAddonDescSelectChange(selectElement) {
+    const textInput = selectElement.parentElement.querySelector(".addon-desc");
+    const priceInput = selectElement.closest(".addon-row").querySelector(".addon-price");
+    
+    if (selectElement.value === "__custom__") {
+        textInput.style.display = "block";
+        textInput.value = "";
+        textInput.focus();
+    } else if (selectElement.value === "") {
+        textInput.style.display = "block";
+        textInput.value = "";
+    } else {
+        textInput.style.display = "none";
+        textInput.value = selectElement.value;
+        
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        const price = selectedOption.dataset.price;
+        if (price !== undefined) {
+            priceInput.value = price;
+        }
+    }
+    onAddonMathChange(priceInput);
+}
+
+function populateAllAddonDescSelects() {
+    document.querySelectorAll(".addon-row").forEach(row => {
+        const select = row.querySelector(".addon-desc-select");
+        const input = row.querySelector(".addon-desc");
+        if (select && input) {
+            populateAddonDescSelect(select, input.value);
+        }
+    });
+}
+

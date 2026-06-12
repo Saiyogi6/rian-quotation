@@ -92,9 +92,10 @@ def test_workflow(server):
         page.fill("#fields_retirement input[name='venue']", "Leela Palace, Chennai")
         
         # Sync line items description and price
-        page.fill(".item-desc", "E2E Traditional Retirement Photography")
-        page.fill(".item-qty", "1")
-        page.fill(".item-price", "25000")
+        page.locator(".item-desc-select").first.select_option("__custom__")
+        page.locator(".item-desc").first.fill("E2E Traditional Retirement Photography")
+        page.locator(".item-qty").first.fill("1")
+        page.locator(".item-price").first.fill("25000")
         
         # Verify right side live preview updates
         page.wait_for_selector("#preview_client_name")

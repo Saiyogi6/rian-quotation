@@ -168,20 +168,12 @@ def preview_quote(request: Request, quote_id: int, db: Session = Depends(get_db)
     # Filter and sort deliverables
     selected_deliverables = [d for d in db_quote.deliverables if d.is_selected]
     selected_paid_deliverables_total = 0.0
-    grouped_deliverables = {}
     for d in selected_deliverables:
         if not d.is_complimentary:
             selected_paid_deliverables_total += float(d.qty or 1) * float(d.price or 0.0)
-        g_name = d.group_name or d.type.capitalize()
-        if g_name not in grouped_deliverables:
-            grouped_deliverables[g_name] = []
-        grouped_deliverables[g_name].append(d)
-        
-    for g_name in grouped_deliverables:
-        grouped_deliverables[g_name].sort(key=lambda x: (x.display_order, x.id or 0))
-        
-    sorted_groups = sorted(grouped_deliverables.keys())
-    sorted_deliverables = [{"group_name": g, "items": grouped_deliverables[g]} for g in sorted_groups]
+            
+    # Sort them by type, then display_order, then ID
+    selected_deliverables.sort(key=lambda x: (x.type, x.display_order, x.id or 0))
     
     # Subtotal
     subtotal = selected_packages_total + selected_paid_deliverables_total
@@ -210,7 +202,7 @@ def preview_quote(request: Request, quote_id: int, db: Session = Depends(get_db)
         "total_formatted": total_formatted,
         "is_pdf": False,
         "sorted_sections": sorted_sections,
-        "sorted_deliverables": sorted_deliverables,
+        "selected_deliverables": selected_deliverables,
         "subtotal": subtotal,
         "active_addons": active_addons,
         "addons_total": addons_total,
@@ -223,6 +215,11 @@ def get_settings_page(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/login")
         
     brand = db.query(Brand).first()
+    if brand and not brand.presets_json:
+        from app.core.presets import DEFAULT_PRESETS_JSON_DATA
+        import json
+        brand.presets_json = json.dumps(DEFAULT_PRESETS_JSON_DATA, indent=2)
+        
     return templates.TemplateResponse(request=request, name="settings.html", context={
         "brand": brand,
         "webhook_url": settings.WEBHOOK_URL
@@ -249,20 +246,12 @@ def render_quote_to_html(quote: Quote, db: Session) -> str:
     # Filter and sort deliverables
     selected_deliverables = [d for d in quote.deliverables if d.is_selected]
     selected_paid_deliverables_total = 0.0
-    grouped_deliverables = {}
     for d in selected_deliverables:
         if not d.is_complimentary:
             selected_paid_deliverables_total += float(d.qty or 1) * float(d.price or 0.0)
-        g_name = d.group_name or d.type.capitalize()
-        if g_name not in grouped_deliverables:
-            grouped_deliverables[g_name] = []
-        grouped_deliverables[g_name].append(d)
-        
-    for g_name in grouped_deliverables:
-        grouped_deliverables[g_name].sort(key=lambda x: (x.display_order, x.id or 0))
-        
-    sorted_groups = sorted(grouped_deliverables.keys())
-    sorted_deliverables = [{"group_name": g, "items": grouped_deliverables[g]} for g in sorted_groups]
+            
+    # Sort them by type, then display_order, then ID
+    selected_deliverables.sort(key=lambda x: (x.type, x.display_order, x.id or 0))
     
     # Subtotal
     subtotal = selected_packages_total + selected_paid_deliverables_total
@@ -293,7 +282,7 @@ def render_quote_to_html(quote: Quote, db: Session) -> str:
         "total_formatted": total_formatted,
         "is_pdf": True,
         "sorted_sections": sorted_sections,
-        "sorted_deliverables": sorted_deliverables,
+        "selected_deliverables": selected_deliverables,
         "subtotal": subtotal,
         "active_addons": active_addons,
         "addons_total": addons_total,

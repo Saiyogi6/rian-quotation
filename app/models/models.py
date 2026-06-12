@@ -15,6 +15,7 @@ class Brand(Base):
     address = Column(Text, nullable=True)
     terms_and_conditions = Column(Text, nullable=True)
     payment_info = Column(Text, nullable=True)
+    presets_json = Column(Text, nullable=True)
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

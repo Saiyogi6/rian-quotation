@@ -56,6 +56,111 @@
                     <textarea id="brand_terms" class="form-control" rows="6" placeholder="Proposal booking rules, payment split definitions, delivery rules...">{{ brand.terms_and_conditions if brand else '' }}</textarea>
                 </div>
 
+                <div class="form-group" style="margin-bottom: 30px;">
+                    <label style="font-weight: 600; font-size: 15px; display: block; margin-bottom: 15px; color: var(--accent);">Interactive Presets & Addons Manager</label>
+                    
+                    <!-- Editor Tab Buttons -->
+                    <div class="editor-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
+                        <button type="button" id="tab_btn_presets" class="btn btn-primary btn-sm" onclick="switchEditorTab('presets')">
+                            <i class="fas fa-box-open" style="margin-right: 6px;"></i> Packages & Presets
+                        </button>
+                        <button type="button" id="tab_btn_addons" class="btn btn-secondary btn-sm" onclick="switchEditorTab('addons')">
+                            <i class="fas fa-tags" style="margin-right: 6px;"></i> Optional Add-ons
+                        </button>
+                    </div>
+                    
+                    <!-- Presets Editor Panel -->
+                    <div id="editor_presets_panel" style="background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label for="editor_preset_select" style="font-weight: 600;">Choose Quotation Preset to Customize</label>
+                            <select id="editor_preset_select" class="form-control" onchange="onEditorPresetSelectChange(this.value)">
+                                <option value="wedding_reception">Wedding & Reception</option>
+                                <option value="reception_only">Reception Only</option>
+                                <option value="marriage_only">Marriage Only</option>
+                                <option value="muslim_wedding">Muslim Wedding</option>
+                                <option value="retirement">Retirement Function</option>
+                                <option value="convocation_ad">Convocation & Ad Shoot</option>
+                                <option value="election">Election Campaign</option>
+                                <option value="custom">Custom Quotation</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label for="editor_preset_intro" style="font-weight: 600;">Default Intro Message (Welcome Note)</label>
+                            <textarea id="editor_preset_intro" class="form-control" rows="3" placeholder="Welcome message for this preset..." oninput="saveCurrentPresetState()"></textarea>
+                        </div>
+                        
+                        <div style="margin-top: 25px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <span style="font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Package Sections & Standard Line Items</span>
+                                <button type="button" class="btn btn-secondary btn-sm" style="font-size: 11px; padding: 4px 8px;" onclick="addEditorSection()">+ Add Section</button>
+                            </div>
+                            <div id="editor_sections_container" style="display: flex; flex-direction: column; gap: 20px;">
+                                <!-- Rendered dynamically -->
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 35px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <span style="font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Default Deliverables List</span>
+                                <button type="button" class="btn btn-secondary btn-sm" style="font-size: 11px; padding: 4px 8px;" onclick="addEditorDeliverable()">+ Add Deliverable</button>
+                            </div>
+                            <div style="overflow-x: auto;">
+                                <table class="line-items-editor-table" style="width: 100%; min-width: 600px;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 130px;">Type</th>
+                                            <th>Description Detail</th>
+                                            <th style="width: 80px; text-align: center;">Qty</th>
+                                            <th style="width: 120px; text-align: right;">Price (₹)</th>
+                                            <th style="width: 110px; text-align: center;">Complimentary</th>
+                                            <th style="width: 50px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="editor_deliverables_tbody">
+                                        <!-- Rendered dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Addons Editor Panel -->
+                    <div id="editor_addons_panel" style="display: none; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <span style="font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Default Optional Add-ons List</span>
+                            <button type="button" class="btn btn-secondary btn-sm" style="font-size: 11px; padding: 4px 8px;" onclick="addEditorAddon()">+ Add Add-on</button>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table class="line-items-editor-table" style="width: 100%; min-width: 500px;">
+                                <thead>
+                                    <tr>
+                                        <th>Add-on Description</th>
+                                        <th style="width: 150px; text-align: right;">Price (₹)</th>
+                                        <th style="width: 50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="editor_addons_tbody">
+                                    <!-- Rendered dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Collapsible Advanced JSON Config -->
+                    <div style="margin-top: 25px;">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="toggleAdvancedJson()" style="font-size: 11px; padding: 4px 8px;">
+                            <i class="fas fa-code"></i> Toggle Advanced JSON Config
+                        </button>
+                        <div id="advanced_json_container" style="display: none; margin-top: 15px;">
+                            <textarea id="brand_presets" class="form-control" rows="10" placeholder="JSON configuration..." required style="font-family: monospace; font-size: 12px; background: #1e1e1e; color: #d4d4d4; border-color: #3c3c3c;" oninput="onRawJsonInput()">{{ brand.presets_json if brand and brand.presets_json else '' }}</textarea>
+                            <p style="color: var(--text-secondary); font-size: 11px; margin-top: 5px;">
+                                Warning: Editing the raw JSON directly can cause visual mismatches if syntax is invalid. Real-time validation is active.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <h3 style="margin-top: 40px;">Integrations & Webhooks</h3>
                 
                 <div class="form-group">
@@ -100,8 +205,425 @@
 <script>
     document.getElementById("nav_settings").classList.add("active");
 
+    // --- INTERACTIVE PRESETS & ADDONS EDITOR ---
+    let PRESETS_CONFIG = {};
+    let CURRENT_PRESET_CODE = "wedding_reception";
+
+    function escapeHtml(text) {
+        if (!text) return "";
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function initEditor() {
+        const rawVal = document.getElementById("brand_presets").value.trim();
+        try {
+            PRESETS_CONFIG = rawVal ? JSON.parse(rawVal) : { presets: {}, addons: [] };
+        } catch(e) {
+            console.error("Failed to parse presets JSON, falling back", e);
+            PRESETS_CONFIG = { presets: {}, addons: [] };
+        }
+        
+        // Ensure standard presets keys exist
+        const defaultCodes = ["wedding_reception", "reception_only", "marriage_only", "muslim_wedding", "retirement", "convocation_ad", "election", "custom"];
+        if (!PRESETS_CONFIG.presets) PRESETS_CONFIG.presets = {};
+        defaultCodes.forEach(code => {
+            if (!PRESETS_CONFIG.presets[code]) {
+                PRESETS_CONFIG.presets[code] = {
+                    intro: "",
+                    sections: [],
+                    deliverables: []
+                };
+            }
+        });
+        if (!PRESETS_CONFIG.addons) PRESETS_CONFIG.addons = [];
+        
+        CURRENT_PRESET_CODE = document.getElementById("editor_preset_select").value;
+        renderCurrentPreset();
+        renderAddons();
+    }
+
+    function renderCurrentPreset() {
+        const preset = PRESETS_CONFIG.presets[CURRENT_PRESET_CODE];
+        document.getElementById("editor_preset_intro").value = preset.intro || "";
+        
+        // Render sections
+        const secContainer = document.getElementById("editor_sections_container");
+        secContainer.innerHTML = "";
+        if (preset.sections && preset.sections.length > 0) {
+            preset.sections.forEach((sec, idx) => {
+                secContainer.appendChild(createSectionElement(sec, idx));
+            });
+        } else {
+            secContainer.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 25px; border: 1px dashed var(--border-color); border-radius: 8px;">No default package sections configured. Click "Add Section" above.</div>`;
+        }
+        
+        // Render deliverables
+        const delivTbody = document.getElementById("editor_deliverables_tbody");
+        delivTbody.innerHTML = "";
+        if (preset.deliverables && preset.deliverables.length > 0) {
+            preset.deliverables.forEach((deliv, idx) => {
+                delivTbody.appendChild(createDeliverableRowElement(deliv, idx));
+            });
+        } else {
+            delivTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 20px;">No default deliverables configured. Click "Add Deliverable" above.</td></tr>`;
+        }
+    }
+
+    function createSectionElement(sec, secIdx) {
+        const div = document.createElement("div");
+        div.className = "settings-editor-section-card";
+        div.style = "border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; background: var(--bg-panel); position: relative;";
+        
+        let rowsHtml = "";
+        if (sec.items && sec.items.length > 0) {
+            sec.items.forEach((item, itemIdx) => {
+                rowsHtml += `
+                    <tr class="editor-item-row" data-item-idx="${itemIdx}">
+                        <td>
+                            <input type="text" class="form-control editor-item-desc" value="${escapeHtml(item.description)}" placeholder="e.g. Candid Photography" style="padding: 4px 8px; font-size: 12px;" oninput="saveCurrentPresetState()">
+                        </td>
+                        <td style="width: 150px;">
+                            <input type="number" class="form-control editor-item-price" value="${item.unit_price || 0}" step="100" min="0" style="text-align: right; padding: 4px 8px; font-size: 12px;" oninput="saveCurrentPresetState()">
+                        </td>
+                        <td style="width: 50px; text-align: center; vertical-align: middle;">
+                            <button type="button" class="action-icon text-danger" style="background: none; border: none; cursor: pointer;" onclick="deleteEditorItem(this)"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+        
+        div.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px;">
+                <input type="text" class="form-control editor-section-title" value="${escapeHtml(sec.title)}" placeholder="Section Title (e.g. Reception Coverage)" style="font-weight: 600; font-size: 13px;" oninput="saveCurrentPresetState()">
+                <button type="button" class="btn btn-danger btn-sm" style="font-size: 10px; padding: 3px 6px;" onclick="deleteEditorSection(${secIdx})"><i class="fas fa-trash"></i> Delete Section</button>
+            </div>
+            <table class="line-items-editor-table" style="width: 100%; margin-bottom: 10px; border-top: 1px solid var(--border-color);">
+                <thead>
+                    <tr>
+                        <th>Service Item Description</th>
+                        <th style="width: 150px; text-align: right;">Unit Price (₹)</th>
+                        <th style="width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody class="editor-items-tbody">
+                    ${rowsHtml}
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-secondary btn-sm" style="font-size: 10px; padding: 4px 8px;" onclick="addEditorItem(${secIdx})">+ Add Item</button>
+        `;
+        return div;
+    }
+
+    function createDeliverableRowElement(deliv, idx) {
+        const tr = document.createElement("tr");
+        tr.className = "editor-deliv-row";
+        tr.dataset.delivIdx = idx;
+        
+        const type = deliv.type || "photo";
+        const desc = deliv.description || "";
+        const qty = deliv.qty !== undefined ? deliv.qty : 1;
+        const price = deliv.price !== undefined ? deliv.price : 0;
+        const comp = deliv.is_complimentary !== undefined ? deliv.is_complimentary : true;
+        
+        tr.innerHTML = `
+            <td>
+                <select class="form-control editor-deliv-type" style="padding: 4px 8px; font-size: 12px; height: auto;" onchange="saveCurrentPresetState()">
+                    <option value="photo" ${type === 'photo' ? 'selected' : ''}>Photos</option>
+                    <option value="video" ${type === 'video' ? 'selected' : ''}>Videos</option>
+                    <option value="album" ${type === 'album' ? 'selected' : ''}>Albums</option>
+                    <option value="turnaround" ${type === 'turnaround' ? 'selected' : ''}>Timeline</option>
+                    <option value="other" ${type === 'other' ? 'selected' : ''}>Other</option>
+                </select>
+            </td>
+            <td>
+                <input type="text" class="form-control editor-deliv-desc" value="${escapeHtml(desc)}" placeholder="e.g. Canvera Magazine Album" style="padding: 4px 8px; font-size: 12px;" oninput="saveCurrentPresetState()">
+            </td>
+            <td>
+                <input type="number" class="form-control editor-deliv-qty" value="${qty}" min="0" style="text-align: center; padding: 4px 8px; font-size: 12px;" oninput="saveCurrentPresetState()">
+            </td>
+            <td>
+                <input type="number" class="form-control editor-deliv-price" value="${price}" min="0" step="100" style="text-align: right; padding: 4px 8px; font-size: 12px;" oninput="saveCurrentPresetState()">
+            </td>
+            <td style="text-align: center; vertical-align: middle;">
+                <input type="checkbox" class="editor-deliv-comp" ${comp ? 'checked' : ''} onchange="saveCurrentPresetState()">
+            </td>
+            <td style="text-align: center; vertical-align: middle;">
+                <button type="button" class="action-icon text-danger" style="background: none; border: none; cursor: pointer;" onclick="deleteEditorDeliverable(this)"><i class="fas fa-trash"></i></button>
+            </td>
+        `;
+        return tr;
+    }
+
+    function renderAddons() {
+        const tbody = document.getElementById("editor_addons_tbody");
+        tbody.innerHTML = "";
+        
+        if (PRESETS_CONFIG.addons && PRESETS_CONFIG.addons.length > 0) {
+            PRESETS_CONFIG.addons.forEach((addon, idx) => {
+                const tr = document.createElement("tr");
+                tr.className = "editor-addon-row";
+                tr.dataset.addonIdx = idx;
+                
+                tr.innerHTML = `
+                    <td>
+                        <input type="text" class="form-control editor-addon-desc" value="${escapeHtml(addon.description)}" placeholder="e.g. LED Wall (6 x 8)" style="padding: 4px 8px; font-size: 12px;" oninput="saveAddonsState()">
+                    </td>
+                    <td style="width: 150px;">
+                        <input type="number" class="form-control editor-addon-price" value="${addon.price || 0}" step="100" min="0" style="text-align: right; padding: 4px 8px; font-size: 12px;" oninput="saveAddonsState()">
+                    </td>
+                    <td style="width: 50px; text-align: center; vertical-align: middle;">
+                        <button type="button" class="action-icon text-danger" style="background: none; border: none; cursor: pointer;" onclick="deleteEditorAddon(this)"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } else {
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-secondary); padding: 20px;">No optional add-ons configured. Click "Add Add-on" above.</td></tr>`;
+        }
+    }
+
+    function switchEditorTab(tab) {
+        const tabPresets = document.getElementById("tab_btn_presets");
+        const tabAddons = document.getElementById("tab_btn_addons");
+        const panelPresets = document.getElementById("editor_presets_panel");
+        const panelAddons = document.getElementById("editor_addons_panel");
+        
+        if (tab === "presets") {
+            tabPresets.classList.remove("btn-secondary");
+            tabPresets.classList.add("btn-primary");
+            tabAddons.classList.remove("btn-primary");
+            tabAddons.classList.add("btn-secondary");
+            
+            panelPresets.style.display = "block";
+            panelAddons.style.display = "none";
+        } else {
+            tabAddons.classList.remove("btn-secondary");
+            tabAddons.classList.add("btn-primary");
+            tabPresets.classList.remove("btn-primary");
+            tabPresets.classList.add("btn-secondary");
+            
+            panelPresets.style.display = "none";
+            panelAddons.style.display = "block";
+        }
+    }
+
+    function onEditorPresetSelectChange(value) {
+        CURRENT_PRESET_CODE = value;
+        renderCurrentPreset();
+    }
+
+    function toggleAdvancedJson() {
+        const container = document.getElementById("advanced_json_container");
+        container.style.display = (container.style.display === "none") ? "block" : "none";
+    }
+
+    function addEditorSection() {
+        const preset = PRESETS_CONFIG.presets[CURRENT_PRESET_CODE];
+        if (!preset.sections) preset.sections = [];
+        
+        preset.sections.push({
+            title: "New Section",
+            items: []
+        });
+        
+        renderCurrentPreset();
+        saveCurrentPresetState();
+    }
+
+    function deleteEditorSection(idx) {
+        const preset = PRESETS_CONFIG.presets[CURRENT_PRESET_CODE];
+        if (confirm("Are you sure you want to remove this package section? All default items inside it will be removed.")) {
+            preset.sections.splice(idx, 1);
+            renderCurrentPreset();
+            saveCurrentPresetState();
+        }
+    }
+
+    function addEditorItem(secIdx) {
+        const preset = PRESETS_CONFIG.presets[CURRENT_PRESET_CODE];
+        const section = preset.sections[secIdx];
+        if (!section.items) section.items = [];
+        
+        section.items.push({
+            description: "",
+            unit_price: 0
+        });
+        
+        renderCurrentPreset();
+        saveCurrentPresetState();
+        
+        // Auto-focus description input
+        const secCards = document.querySelectorAll("#editor_sections_container .settings-editor-section-card");
+        const targetCard = secCards[secIdx];
+        const rows = targetCard.querySelectorAll(".editor-item-row");
+        if (rows.length > 0) {
+            rows[rows.length - 1].querySelector(".editor-item-desc").focus();
+        }
+    }
+
+    function deleteEditorItem(button) {
+        const row = button.closest(".editor-item-row");
+        row.remove();
+        saveCurrentPresetState();
+    }
+
+    function addEditorDeliverable() {
+        const preset = PRESETS_CONFIG.presets[CURRENT_PRESET_CODE];
+        if (!preset.deliverables) preset.deliverables = [];
+        
+        preset.deliverables.push({
+            type: "photo",
+            description: "",
+            qty: 1,
+            price: 0,
+            is_complimentary: true
+        });
+        
+        renderCurrentPreset();
+        saveCurrentPresetState();
+    }
+
+    function deleteEditorDeliverable(button) {
+        const row = button.closest(".editor-deliv-row");
+        row.remove();
+        saveCurrentPresetState();
+    }
+
+    function addEditorAddon() {
+        if (!PRESETS_CONFIG.addons) PRESETS_CONFIG.addons = [];
+        
+        PRESETS_CONFIG.addons.push({
+            description: "",
+            price: 0
+        });
+        
+        renderAddons();
+        saveAddonsState();
+    }
+
+    function deleteEditorAddon(button) {
+        const row = button.closest(".editor-addon-row");
+        row.remove();
+        saveAddonsState();
+    }
+
+    function saveCurrentPresetState() {
+        const preset = PRESETS_CONFIG.presets[CURRENT_PRESET_CODE];
+        preset.intro = document.getElementById("editor_preset_intro").value.trim();
+        
+        // Read sections
+        preset.sections = [];
+        const secCards = document.querySelectorAll("#editor_sections_container .settings-editor-section-card");
+        secCards.forEach(card => {
+            const title = card.querySelector(".editor-section-title").value.trim();
+            const items = [];
+            const itemRows = card.querySelectorAll(".editor-item-row");
+            itemRows.forEach(row => {
+                const description = row.querySelector(".editor-item-desc").value.trim();
+                const unit_price = parseFloat(row.querySelector(".editor-item-price").value) || 0;
+                if (description) {
+                    items.push({
+                        description: description,
+                        qty: 1,
+                        unit_price: unit_price,
+                        is_selected: true,
+                        group_name: title,
+                        display_order: items.length,
+                        item_category: "photo"
+                    });
+                }
+            });
+            preset.sections.push({
+                title: title,
+                items: items
+            });
+        });
+        
+        // Read deliverables
+        preset.deliverables = [];
+        const delivRows = document.querySelectorAll("#editor_deliverables_tbody .editor-deliv-row");
+        delivRows.forEach(row => {
+            const type = row.querySelector(".editor-deliv-type").value;
+            const description = row.querySelector(".editor-deliv-desc").value.trim();
+            const qty = parseInt(row.querySelector(".editor-deliv-qty").value) || 1;
+            const price = parseFloat(row.querySelector(".editor-deliv-price").value) || 0;
+            const is_complimentary = row.querySelector(".editor-deliv-comp").checked;
+            if (description) {
+                preset.deliverables.push({
+                    type: type,
+                    description: description,
+                    qty: qty,
+                    price: price,
+                    is_complimentary: is_complimentary,
+                    group_name: type === 'photo' ? 'Photos' : (type === 'video' ? 'Videos' : 'Albums'),
+                    display_order: preset.deliverables.length
+                });
+            }
+        });
+        
+        document.getElementById("brand_presets").value = JSON.stringify(PRESETS_CONFIG, null, 2);
+    }
+
+    function saveAddonsState() {
+        PRESETS_CONFIG.addons = [];
+        const rows = document.querySelectorAll("#editor_addons_tbody .editor-addon-row");
+        rows.forEach(row => {
+            const description = row.querySelector(".editor-addon-desc").value.trim();
+            const price = parseFloat(row.querySelector(".editor-addon-price").value) || 0;
+            if (description) {
+                PRESETS_CONFIG.addons.push({
+                    description: description,
+                    price: price
+                });
+            }
+        });
+        
+        document.getElementById("brand_presets").value = JSON.stringify(PRESETS_CONFIG, null, 2);
+    }
+
+    function onRawJsonInput() {
+        const rawVal = document.getElementById("brand_presets").value.trim();
+        try {
+            if (rawVal) {
+                const parsed = JSON.parse(rawVal);
+                if (parsed && typeof parsed === "object") {
+                    PRESETS_CONFIG = parsed;
+                    renderCurrentPreset();
+                    renderAddons();
+                }
+            }
+        } catch(e) {
+            // Keep typing - it'll fail validation on submit if left invalid
+        }
+    }
+
+    // Initialize when DOM is ready
+    document.addEventListener("DOMContentLoaded", () => {
+        initEditor();
+    });
+
     async function saveSettings(event) {
         event.preventDefault();
+        
+        // Final serialization pass to be absolutely safe
+        saveCurrentPresetState();
+        saveAddonsState();
+        
+        const presetsJsonVal = document.getElementById("brand_presets").value.trim();
+        try {
+            if (presetsJsonVal) {
+                JSON.parse(presetsJsonVal);
+            }
+        } catch (e) {
+            alert("Invalid Presets & Addons JSON configuration: " + e.message);
+            return;
+        }
         
         const payload = {
             webhook_url: document.getElementById("webhook_url").value,
@@ -112,7 +634,8 @@
                 website: document.getElementById("brand_website").value,
                 address: document.getElementById("brand_address").value,
                 payment_info: document.getElementById("brand_payment").value,
-                terms_and_conditions: document.getElementById("brand_terms").value
+                terms_and_conditions: document.getElementById("brand_terms").value,
+                presets_json: presetsJsonVal
             }
         };
 

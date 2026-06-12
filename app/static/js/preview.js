@@ -245,70 +245,42 @@ function syncPreview() {
             const desc = row.querySelector(".deliv-desc").value.trim();
             const qty = parseInt(row.querySelector(".deliv-qty").value) || 0;
             const price = parseFloat(row.querySelector(".deliv-price").value) || 0;
-            const isComplimentary = row.querySelector(".deliv-complimentary") ? row.querySelector(".deliv-complimentary").checked : false;
-            const groupName = row.querySelector(".deliv-group-name")?.value.trim() || (type.charAt(0).toUpperCase() + type.slice(1));
-            const displayOrder = parseInt(row.querySelector(".deliv-display-order")?.value || 0);
+            const isComplimentary = (price === 0);
             
-            return { isSelected, type, desc, qty, price, isComplimentary, groupName, displayOrder };
+            return { isSelected, type, desc, qty, price, isComplimentary };
         }).filter(d => d.isSelected && d.desc !== "");
 
         if (activeDelivs.length === 0) {
             delivSection.style.display = "none";
         } else {
-            // Group by groupName
-            const groups = {};
+            // Render directly in a grid instead of grouping by groupName
+            let cardsContainerHtml = `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px;">`;
+            
             activeDelivs.forEach(d => {
-                if (!groups[d.groupName]) {
-                    groups[d.groupName] = [];
+                let typeLabel = "Deliverable";
+                if (d.type === "photo") typeLabel = "Photos Output";
+                else if (d.type === "video") typeLabel = "Videos Output";
+                else if (d.type === "album") typeLabel = "Album Output";
+                else if (d.type === "turnaround") typeLabel = "Turnaround";
+                
+                let badgeHtml = "";
+                if (d.isComplimentary) {
+                    badgeHtml = `<div style="font-size: 11px; font-weight: 600; color: #10b981; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Complimentary</div>`;
+                } else if (d.price > 0) {
+                    badgeHtml = `<div style="font-size: 11px; font-weight: 600; color: var(--quote-gold, #c5a880); margin-top: 5px;">₹${d.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>`;
                 }
-                groups[d.groupName].push(d);
+                
+                cardsContainerHtml += `
+                    <div class="deliverable-card" style="margin-bottom: 0; page-break-inside: avoid;">
+                        <div class="deliverable-card-title">${typeLabel} ${d.qty > 0 ? `(${d.qty})` : ''}</div>
+                        <div style="font-size: 12px; color: var(--quote-text-light, #6b7280);">${d.desc}</div>
+                        ${badgeHtml}
+                    </div>
+                `;
             });
             
-            // Sort each group by displayOrder
-            for (const gName in groups) {
-                groups[gName].sort((a, b) => a.displayOrder - b.displayOrder);
-            }
-            
-            // Sort group headers alphabetically to keep stable order
-            const sortedGroupNames = Object.keys(groups).sort();
-            
-            sortedGroupNames.forEach(gName => {
-                const groupWrapper = document.createElement("div");
-                groupWrapper.style.width = "100%";
-                groupWrapper.style.marginBottom = "15px";
-                
-                let groupHeaderHtml = `<h4 style="font-family: 'Playfair Display', serif; font-size: 14px; color: var(--quote-accent, #c5a880); margin-bottom: 8px; border-bottom: 1px solid var(--border-color, #e5e7eb); padding-bottom: 4px; font-weight: 600;">${gName}</h4>`;
-                
-                let cardsContainerHtml = `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px;">`;
-                
-                groups[gName].forEach(d => {
-                    let typeLabel = "Deliverable";
-                    if (d.type === "photo") typeLabel = "Photos Output";
-                    else if (d.type === "video") typeLabel = "Videos Output";
-                    else if (d.type === "album") typeLabel = "Album Output";
-                    else if (d.type === "turnaround") typeLabel = "Turnaround";
-                    
-                    let badgeHtml = "";
-                    if (d.isComplimentary) {
-                        badgeHtml = `<div style="font-size: 11px; font-weight: 600; color: #10b981; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Complimentary</div>`;
-                    } else if (d.price > 0) {
-                        badgeHtml = `<div style="font-size: 11px; font-weight: 600; color: var(--quote-gold, #c5a880); margin-top: 5px;">₹${d.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>`;
-                    }
-                    
-                    cardsContainerHtml += `
-                        <div class="deliverable-card" style="margin-bottom: 0;">
-                            <div class="deliverable-card-title">${typeLabel} ${d.qty > 0 ? `(${d.qty})` : ''}</div>
-                            <div style="font-size: 12px; color: var(--quote-text-light, #6b7280);">${d.desc}</div>
-                            ${badgeHtml}
-                        </div>
-                    `;
-                });
-                
-                cardsContainerHtml += `</div>`;
-                groupWrapper.innerHTML = groupHeaderHtml + cardsContainerHtml;
-                delivContainer.appendChild(groupWrapper);
-            });
-            
+            cardsContainerHtml += `</div>`;
+            delivContainer.innerHTML = cardsContainerHtml;
             delivSection.style.display = "block";
         }
     }

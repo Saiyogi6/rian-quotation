@@ -81,6 +81,33 @@ def health_check(db: Session = Depends(get_db)):
 def startup_event():
     logger.info("Starting up Rian Studioz Quotation Engine...")
     Base.metadata.create_all(bind=engine)
+    
+    # Dynamic SQLite migration: add presets_json column if it doesn't exist
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text("PRAGMA table_info(brands)")).fetchall()
+            columns = [row[1] for row in result]
+            if "presets_json" not in columns:
+                logger.info("Running DB migration: Adding presets_json column to brands table")
+                conn.execute(text("ALTER TABLE brands ADD COLUMN presets_json TEXT"))
+                conn.commit()
+                logger.info("DB migration: Column added successfully")
+            
+            # Populate presets_json if null on any existing brand
+            brand_records = conn.execute(text("SELECT id, presets_json FROM brands")).fetchall()
+            for row in brand_records:
+                if not row[1]:
+                    from app.core.presets import DEFAULT_PRESETS_JSON_DATA
+                    import json
+                    logger.info(f"DB migration: Populating default presets_json for brand ID {row[0]}")
+                    conn.execute(
+                        text("UPDATE brands SET presets_json = :presets_json WHERE id = :id"),
+                        {"presets_json": json.dumps(DEFAULT_PRESETS_JSON_DATA, indent=2), "id": row[0]}
+                    )
+            conn.commit()
+    except Exception as e:
+        logger.error(f"Dynamic DB migration failed: {e}")
+        
     logger.info("Database tables initialized.")
 
 if __name__ == "__main__":
