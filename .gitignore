@@ -30,3 +30,4 @@ app/static/pdfs/*.pdf
 .vscode/
 .idea/
 .DS_Store
+.vercel
